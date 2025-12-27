@@ -34,8 +34,8 @@ impl SimpleAI {
         if let Some(enemy) = nearest_enemy {
             let distance = CombatResolver::distance(actor.x, actor.y, enemy.x, enemy.y);
             
-            // If in range and have stamina, attack
-            if distance <= 1.5 {
+            // If in melee range (adjacent) and have stamina, attack
+            if distance <= 1.1 {
                 // Pick a random attack we can afford
                 let affordable_attacks: Vec<&Attack> = attacks
                     .iter()
