@@ -36,7 +36,7 @@ impl Battle {
             seed,
             rng,
             species_loader: SpeciesLoader::new(),
-            grid: Grid::new(60, 40),
+            grid: Grid::new(20, 12), // Will be resized in init_with_species based on actor count
             team_a: Vec::new(),
             team_b: Vec::new(),
             tick_count: 0,
@@ -56,13 +56,23 @@ impl Battle {
         let team_b_data: Vec<TeamMemberData> = serde_json::from_str(team_b_json)
             .map_err(|e| format!("Failed to parse team B: {}", e))?;
         
+        // Calculate appropriate grid size based on actor count
+        let total_actors = team_a_data.len() + team_b_data.len();
+        let max_team = team_a_data.len().max(team_b_data.len());
+        // Height: enough rows for the larger team with spacing
+        let grid_height = ((max_team * 2) + 2).max(8) as i32;
+        // Width: enough space for movement and combat (proportional to height)
+        let grid_width = (grid_height * 2).max(16) as i32;
+        self.grid = Grid::new(grid_width, grid_height);
+        
         // Spawn team A on the left side
         for (idx, data) in team_a_data.iter().enumerate() {
             let species = self.species_loader.get_species(&data.species_id)
                 .ok_or_else(|| format!("Species '{}' not found", data.species_id))?;
             
-            let y = (idx as i32 * 3) % self.grid.height();
-            let mut actor = self.create_actor_from_species(idx as u32, species, 0, 5, y);
+            // Space actors 2 rows apart, starting at row 1
+            let y = 1 + (idx as i32 * 2) % (self.grid.height() - 1);
+            let mut actor = self.create_actor_from_species(idx as u32, species, 0, 2, y);
             
             // Apply variation - either specified or auto-generated
             if let Some(variation) = &data.variation {
@@ -80,12 +90,13 @@ impl Battle {
             let species = self.species_loader.get_species(&data.species_id)
                 .ok_or_else(|| format!("Species '{}' not found", data.species_id))?;
             
-            let y = (idx as i32 * 3) % self.grid.height();
+            // Space actors 2 rows apart, starting at row 1
+            let y = 1 + (idx as i32 * 2) % (self.grid.height() - 1);
             let mut actor = self.create_actor_from_species(
                 (team_a_data.len() + idx) as u32,
                 species,
                 1,
-                self.grid.width() - 6,
+                self.grid.width() - 3,
                 y
             );
             
@@ -158,7 +169,7 @@ impl Battle {
                     hp: part_def.hp,
                     max_hp: part_def.hp,
                     armor: part_def.armor,
-                    bleed_rate: part_def.bleed_rate,
+                    bleed_rate: 0, // Start with no bleeding - bleed_rate increases when wounded
                     hit_weight: part_def.hit_weight,
                 };
                 
@@ -347,6 +358,29 @@ impl Battle {
                     };
                     
                     if let Some(attack) = attack_opt {
+                        // Check range before attacking - must be adjacent (distance <= 1.5 for diagonal)
+                        let in_range = {
+                            let attacker = if attacker_in_a {
+                                self.team_a.iter().find(|a| a.id == attacker_id)
+                            } else {
+                                self.team_b.iter().find(|a| a.id == attacker_id)
+                            };
+                            let defender = if defender_in_a {
+                                self.team_a.iter().find(|a| a.id == target_id)
+                            } else {
+                                self.team_b.iter().find(|a| a.id == target_id)
+                            };
+                            if let (Some(atk), Some(def)) = (attacker, defender) {
+                                CombatResolver::is_in_range(atk, def, 1.5)
+                            } else {
+                                false
+                            }
+                        };
+                        
+                        if !in_range {
+                            continue; // Skip attack if not in melee range
+                        }
+                        
                         // Resolve combat based on team configuration
                         let combat_events = if attacker_in_a {
                             // Team A attacks Team B

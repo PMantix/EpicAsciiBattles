@@ -47,8 +47,17 @@ struct RoundResultView: View {
                     // Continue button
                     if run.wasCorrect {
                         Button(action: {
+                            // Reset battle state
+                            run.pickedTeam = nil
+                            run.battleCore = nil
+                            run.battleFinished = false
+                            run.wasCorrect = false
+                            
+                            // Generate next matchup
                             run.generateNextMatchup()
-                            gameState.navigationPath.removeLast() // Back to round offer
+                            
+                            // Navigate back to round offer (remove both result and battle views)
+                            gameState.navigationPath.removeLast(2)
                         }) {
                             Text("Next Round")
                                 .font(.system(.title2, design: .monospaced, weight: .semibold))

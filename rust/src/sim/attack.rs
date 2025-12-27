@@ -58,13 +58,13 @@ impl Attack {
             return None; // Not a weapon part
         };
         
-        // Calculate damage based on part HP and tags
+        // Calculate damage based on part HP and tags (reduced for balance)
         let base_damage = match attack_type {
-            AttackType::Peck => (hp / 2).max(3),
-            AttackType::Bite => (hp / 2 + 2).max(5),
-            AttackType::Scratch => (hp / 3).max(2),
-            AttackType::Sting => (hp / 2).max(4),
-            _ => hp / 3,
+            AttackType::Peck => (hp / 4).max(2),
+            AttackType::Bite => (hp / 3).max(3),
+            AttackType::Scratch => (hp / 5).max(1),
+            AttackType::Sting => (hp / 4).max(2),
+            _ => hp / 4,
         };
         
         let armor_penetration = if has_sharp {

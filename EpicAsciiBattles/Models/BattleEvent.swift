@@ -41,6 +41,15 @@ enum BattleEvent: Codable {
             }
             throw DecodingError.keyNotFound(primary, .init(codingPath: container.codingPath, debugDescription: "Missing key \(primary.rawValue)"))
         }
+        func decodeString(_ primary: CodingKeys, alt: CodingKeys? = nil) throws -> String {
+            if let value = try container.decodeIfPresent(String.self, forKey: primary) {
+                return value
+            }
+            if let alt = alt, let value = try container.decodeIfPresent(String.self, forKey: alt) {
+                return value
+            }
+            throw DecodingError.keyNotFound(primary, .init(codingPath: container.codingPath, debugDescription: "Missing key \(primary.rawValue)"))
+        }
         
         switch type {
         case "Move", "move":
@@ -54,9 +63,9 @@ enum BattleEvent: Codable {
         case "Hit", "hit":
             let attackerId = try decodeU32(.attackerId, alt: .attacker_id)
             let defenderId = try decodeU32(.defenderId, alt: .defender_id)
-            let partId = try container.decode(String.self, forKey: .partId)
+            let partId = try decodeString(.partId, alt: .part_id)
             let damage = try decodeU32(.damage)
-            let attackName = try container.decode(String.self, forKey: .attackName)
+            let attackName = try decodeString(.attackName, alt: .attack_name)
             self = .hit(attackerId: attackerId, defenderId: defenderId, partId: partId, damage: damage, attackName: attackName)
             
         case "Bleed", "bleed":
@@ -66,8 +75,8 @@ enum BattleEvent: Codable {
             
         case "Sever", "sever":
             let actorId = try decodeU32(.actorId, alt: .actor_id)
-            let partId = try container.decode(String.self, forKey: .partId)
-            let gibCharStr = try container.decode(String.self, forKey: .gibChar)
+            let partId = try decodeString(.partId, alt: .part_id)
+            let gibCharStr = try decodeString(.gibChar, alt: .gib_char)
             let gibChar = gibCharStr.first ?? " "
             let x = try decodeI32(.x)
             let y = try decodeI32(.y)

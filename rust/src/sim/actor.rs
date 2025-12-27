@@ -12,6 +12,7 @@ pub struct Actor {
     pub y: i32,
     pub hp: i32,
     pub max_hp: i32,
+    #[serde(rename = "is_alive")]
     pub alive: bool,
     pub parts: Vec<Part>,
     pub stamina: u32,

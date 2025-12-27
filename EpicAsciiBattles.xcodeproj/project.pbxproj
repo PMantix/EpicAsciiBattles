@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -22,6 +22,18 @@
 		B1C38DC7AC39013B1C7F3445 /* LeaderboardStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4251AB55D4BD4AA4FFDAF287 /* LeaderboardStore.swift */; };
 		F2314B4113FF850C4207F081 /* RunSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 080399203A06C01F677EF66D /* RunSummaryView.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		FD99F8EC2F00655C00B0951D /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = species;
+			dstSubfolderSpec = 7;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		04FD9F5000C2BF8B363E334C /* EpicAsciiBattles.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = EpicAsciiBattles.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -122,6 +134,8 @@
 			buildPhases = (
 				F23AEC7DA80C0E4D9FB957AF /* Build Rust Library */,
 				E02AF8B7F83A4757A4ED027F /* Sources */,
+				FD99F8EC2F00655C00B0951D /* CopyFiles */,
+				FD99F8ED2F0065B900B0951D /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -153,7 +167,6 @@
 			);
 			mainGroup = 4E0A355F68DEB4194305DE43;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -181,6 +194,24 @@
 			shellPath = /bin/sh;
 			shellScript = "#!/bin/bash\nset -e\n\n# Add cargo to PATH\nexport PATH=\"$HOME/.cargo/bin:$PATH\"\n\n# Build Rust library for the appropriate architecture\ncd \"${PROJECT_DIR}/rust\"\n\nif [ \"${PLATFORM_NAME}\" == \"iphonesimulator\" ]; then\n  if [ \"${ARCHS}\" == \"arm64\" ]; then\n    cargo build --target aarch64-apple-ios-sim --release\n  else\n    cargo build --target x86_64-apple-ios --release\n  fi\nelse\n  cargo build --target aarch64-apple-ios --release\nfi\n";
 			showEnvVarsInLog = 0;
+		};
+		FD99F8ED2F0065B900B0951D /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "rsync -a \"${SRCROOT}/EpicAsciiBattles/Resources/species/\" \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/species/\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -343,7 +374,10 @@
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/rust/target/aarch64-apple-ios-sim/release";
-				OTHER_LDFLAGS = "-lepic_ascii_battles_core -lresolv";
+				OTHER_LDFLAGS = (
+					"-lepic_ascii_battles_core",
+					"-lresolv",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.epicasciibattles.app;
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
@@ -362,7 +396,10 @@
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/rust/target/aarch64-apple-ios-sim/release";
-				OTHER_LDFLAGS = "-lepic_ascii_battles_core -lresolv";
+				OTHER_LDFLAGS = (
+					"-lepic_ascii_battles_core",
+					"-lresolv",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.epicasciibattles.app;
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "";

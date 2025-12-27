@@ -354,59 +354,77 @@ struct BattleGridView: View {
     let blips: [HitBlip]
     
     var body: some View {
-        GeometryReader { _ in
-            Canvas { context, size in
-                let cellWidth = size.width / CGFloat(battleState.grid.width)
-                let cellHeight = size.height / CGFloat(battleState.grid.height)
-                let groundGlyphs: [Character] = ["`", ".", ",", "'", "\\"]
+        GeometryReader { geometry in
+            let gridWidth = Int(battleState.grid.width)
+            let gridHeight = Int(battleState.grid.height)
+            // Use monospaced cell sizing - each cell is square based on font
+            let cellSize = min(geometry.size.width / CGFloat(gridWidth),
+                               geometry.size.height / CGFloat(gridHeight))
+            let fontSize = cellSize * 0.7
+            let totalWidth = cellSize * CGFloat(gridWidth)
+            let totalHeight = cellSize * CGFloat(gridHeight)
+            let offsetX = (geometry.size.width - totalWidth) / 2
+            let offsetY = (geometry.size.height - totalHeight) / 2
+            
+            Canvas { context, _ in
+                let groundGlyphs: [Character] = ["`", ".", ",", "'", "\""]
                 let now = Date()
                 
-                // Background terrain to show grid cadence
-                for y in 0..<Int(battleState.grid.height) {
-                    for x in 0..<Int(battleState.grid.width) {
-                        let hash = (x * 73856093) ^ (y * 19349663)
-                        let glyph = groundGlyphs[abs(hash) % groundGlyphs.count]
-                        let jitter = Double((hash >> 3) & 0xF) / 255.0
-                        let baseGreen = 0.32 + jitter * 0.1
-                        let baseRed = 0.18 + jitter * 0.05
-                        let baseBlue = 0.18
-                        let text = Text(String(glyph))
-                            .font(.system(size: 13, design: .monospaced))
-                            .foregroundColor(Color(red: baseRed, green: baseGreen, blue: baseBlue).opacity(0.75))
-                        let px = CGFloat(x) * cellWidth + cellWidth / 2
-                        let py = CGFloat(y) * cellHeight + cellHeight / 2
-                        context.draw(text, at: CGPoint(x: px, y: py))
-                    }
-                }
+                // Build lookup maps for actors and blips by position
+                var teamAMap: [Int: ActorInfo] = [:]
+                var teamBMap: [Int: ActorInfo] = [:]
+                var blipMap: [Int: HitBlip] = [:]
                 
-                // Draw team A actors
                 for actor in battleState.teamA where actor.isAlive {
-                    let x = CGFloat(actor.x) * cellWidth + cellWidth / 2
-                    let y = CGFloat(actor.y) * cellHeight + cellHeight / 2
-                    let text = Text(String(actor.glyph))
-                        .font(.system(size: 22, design: .monospaced))
-                        .foregroundColor(.green)
-                    context.draw(text, at: CGPoint(x: x, y: y))
+                    let key = Int(actor.y) * gridWidth + Int(actor.x)
+                    teamAMap[key] = actor
                 }
-                
-                // Draw team B actors
                 for actor in battleState.teamB where actor.isAlive {
-                    let x = CGFloat(actor.x) * cellWidth + cellWidth / 2
-                    let y = CGFloat(actor.y) * cellHeight + cellHeight / 2
-                    let text = Text(String(actor.glyph))
-                        .font(.system(size: 22, design: .monospaced))
-                        .foregroundColor(.red)
-                    context.draw(text, at: CGPoint(x: x, y: y))
+                    let key = Int(actor.y) * gridWidth + Int(actor.x)
+                    teamBMap[key] = actor
+                }
+                for blip in blips where blip.expires > now {
+                    let key = Int(blip.y) * gridWidth + Int(blip.x)
+                    blipMap[key] = blip
                 }
                 
-                // Draw transient hit/gib blips
-                for blip in blips where blip.expires > now {
-                    let x = CGFloat(blip.x) * cellWidth + cellWidth / 2
-                    let y = CGFloat(blip.y) * cellHeight + cellHeight / 2
-                    let text = Text(blip.glyph)
-                        .font(.system(size: 20, design: .monospaced))
-                        .foregroundColor(blip.color)
-                    context.draw(text, at: CGPoint(x: x, y: y))
+                // Draw exactly one character per tile
+                for y in 0..<gridHeight {
+                    for x in 0..<gridWidth {
+                        let key = y * gridWidth + x
+                        let px = offsetX + CGFloat(x) * cellSize + cellSize / 2
+                        let py = offsetY + CGFloat(y) * cellSize + cellSize / 2
+                        
+                        // Priority: Team A actor > Team B actor > Blip > Terrain
+                        if let actor = teamAMap[key] {
+                            let text = Text(String(actor.glyph))
+                                .font(.system(size: fontSize, weight: .bold, design: .monospaced))
+                                .foregroundColor(.green)
+                            context.draw(text, at: CGPoint(x: px, y: py))
+                        } else if let actor = teamBMap[key] {
+                            let text = Text(String(actor.glyph))
+                                .font(.system(size: fontSize, weight: .bold, design: .monospaced))
+                                .foregroundColor(.red)
+                            context.draw(text, at: CGPoint(x: px, y: py))
+                        } else if let blip = blipMap[key] {
+                            let text = Text(blip.glyph)
+                                .font(.system(size: fontSize, weight: .bold, design: .monospaced))
+                                .foregroundColor(blip.color)
+                            context.draw(text, at: CGPoint(x: px, y: py))
+                        } else {
+                            // Terrain background
+                            let hash = (x * 73856093) ^ (y * 19349663)
+                            let glyph = groundGlyphs[abs(hash) % groundGlyphs.count]
+                            let jitter = Double((hash >> 3) & 0xF) / 255.0
+                            let baseGreen = 0.32 + jitter * 0.1
+                            let baseRed = 0.18 + jitter * 0.05
+                            let baseBlue = 0.18
+                            let text = Text(String(glyph))
+                                .font(.system(size: fontSize * 0.6, design: .monospaced))
+                                .foregroundColor(Color(red: baseRed, green: baseGreen, blue: baseBlue).opacity(0.75))
+                            context.draw(text, at: CGPoint(x: px, y: py))
+                        }
+                    }
                 }
             }
         }

@@ -86,20 +86,65 @@ class GameRun: ObservableObject {
     
     func pickTeam(_ team: Int) {
         pickedTeam = team
+        battleFinished = false
+        wasCorrect = false
         
         // Initialize battle simulation
         let battleSeed = seed &+ UInt64(round)
         battleCore = GameCore(seed: battleSeed)
         
-        // Create team JSON (simplified for Phase 1)
-        let teamAJson = """
-        [{"species_id": "\(teamAName)", "glyph": "\(teamAGlyph)"}]
-        """
-        let teamBJson = """
-        [{"species_id": "\(teamBName)", "glyph": "\(teamBGlyph)"}]
-        """
+        // Get species directory from bundle
+        guard let speciesDir = Bundle.main.resourcePath?.appending("/species") else {
+            print("❌ ERROR: Could not find species directory in bundle")
+            print("   Bundle path: \(Bundle.main.resourcePath ?? "nil")")
+            return
+        }
         
-        _ = battleCore?.initBattle(teamA: teamAJson, teamB: teamBJson)
+        print("\n🎯 Initializing battle...")
+        print("   Species dir: \(speciesDir)")
+        
+        // Verify species files exist
+        let fileManager = FileManager.default
+        let chickenPath = "\(speciesDir)/chicken.yaml"
+        let baboonPath = "\(speciesDir)/baboon.yaml"
+        
+        print("   Checking files...")
+        print("   - chicken.yaml exists: \(fileManager.fileExists(atPath: chickenPath))")
+        print("   - baboon.yaml exists: \(fileManager.fileExists(atPath: baboonPath))")
+        
+        if let contents = try? fileManager.contentsOfDirectory(atPath: speciesDir) {
+            print("   Directory contents: \(contents)")
+        }
+        
+        print("   Team A: \(teamACount)x \(teamAName)")
+        print("   Team B: \(teamBCount)x \(teamBName)")
+        
+        // Create team JSON with species IDs - fixed to handle all counts correctly
+        let teamAMembers = (0..<teamACount).map { _ in "{\"species_id\": \"\(teamAName.lowercased())\"}" }.joined(separator: ",")
+        let teamBMembers = (0..<teamBCount).map { _ in "{\"species_id\": \"\(teamBName.lowercased())\"}" }.joined(separator: ",")
+        
+        let teamAJson = "[\(teamAMembers)]"
+        let teamBJson = "[\(teamBMembers)]"
+        
+        print("   Team A JSON: \(teamAJson)")
+        print("   Team B JSON: \(teamBJson)")
+        
+        let success = battleCore?.initWithSpecies(speciesDir: speciesDir, teamA: teamAJson, teamB: teamBJson) ?? false
+        if !success {
+            print("❌ ERROR: Failed to initialize battle with species")
+            print("   This means either:")
+            print("   1. Species files are not in the bundle")
+            print("   2. JSON is malformed")
+            print("   3. Species IDs don't match file names")
+        } else {
+            print("✅ Battle initialized successfully!")
+            if let state = battleCore?.getState() {
+                print("   Loaded: \(state.teamA.count) vs \(state.teamB.count) actors")
+                print("   Grid: \(state.grid.width)x\(state.grid.height)")
+            } else {
+                print("   ⚠️ State returned nil after successful init")
+            }
+        }
     }
     
     func calculateScore(isUnderdog: Bool) -> Int {

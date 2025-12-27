@@ -27,6 +27,20 @@ class GameCore {
         }
     }
     
+    /// Initialize battle with species-based team compositions
+    /// teamA and teamB should be JSON arrays like: [{"species_id": "chicken"}]
+    func initWithSpecies(speciesDir: String, teamA: String, teamB: String) -> Bool {
+        guard let handle = handle else { return false }
+        
+        return speciesDir.withCString { dirPtr in
+            teamA.withCString { teamAPtr in
+                teamB.withCString { teamBPtr in
+                    sim_init_with_species(handle, dirPtr, teamAPtr, teamBPtr)
+                }
+            }
+        }
+    }
+    
     /// Advance simulation by one tick
     func tick() {
         guard let handle = handle else { return }
@@ -102,6 +116,9 @@ func sim_new(_ seed: UInt64) -> OpaquePointer?
 
 @_silgen_name("sim_init_battle")
 func sim_init_battle(_ handle: OpaquePointer, _ teamA: UnsafePointer<CChar>, _ teamB: UnsafePointer<CChar>) -> Bool
+
+@_silgen_name("sim_init_with_species")
+func sim_init_with_species(_ handle: OpaquePointer, _ speciesDir: UnsafePointer<CChar>, _ teamA: UnsafePointer<CChar>, _ teamB: UnsafePointer<CChar>) -> Bool
 
 @_silgen_name("sim_tick")
 func sim_tick(_ handle: OpaquePointer)

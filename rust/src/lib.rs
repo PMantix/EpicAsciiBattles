@@ -69,6 +69,46 @@ pub extern "C" fn sim_init_battle(
     }
 }
 
+/// Initialize a battle with species-based team compositions
+/// species_dir should point to a directory containing YAML species files
+/// team_a_json and team_b_json should be JSON arrays like: [{"species_id": "chicken"}]
+/// 
+/// # Safety
+/// handle must be a valid pointer returned by sim_new
+/// species_dir, team_a_json, and team_b_json must be valid null-terminated C strings
+#[no_mangle]
+pub extern "C" fn sim_init_with_species(
+    handle: *mut SimHandle,
+    species_dir: *const c_char,
+    team_a_json: *const c_char,
+    team_b_json: *const c_char,
+) -> bool {
+    if handle.is_null() || species_dir.is_null() || team_a_json.is_null() || team_b_json.is_null() {
+        return false;
+    }
+    
+    unsafe {
+        let handle = &mut *handle;
+        
+        let species_dir_str = match CStr::from_ptr(species_dir).to_str() {
+            Ok(s) => s,
+            Err(_) => return false,
+        };
+        
+        let team_a_str = match CStr::from_ptr(team_a_json).to_str() {
+            Ok(s) => s,
+            Err(_) => return false,
+        };
+        
+        let team_b_str = match CStr::from_ptr(team_b_json).to_str() {
+            Ok(s) => s,
+            Err(_) => return false,
+        };
+        
+        handle.battle.init_with_species(species_dir_str, team_a_str, team_b_str).is_ok()
+    }
+}
+
 /// Advance the simulation by one tick
 /// 
 /// # Safety
