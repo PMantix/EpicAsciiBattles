@@ -59,20 +59,30 @@ impl Battle {
         // Calculate appropriate grid size based on actor count
         let total_actors = team_a_data.len() + team_b_data.len();
         let max_team = team_a_data.len().max(team_b_data.len());
-        // Height: enough rows for the larger team with spacing
-        let grid_height = ((max_team * 2) + 2).max(8) as i32;
-        // Width: enough space for movement and combat (proportional to height)
-        let grid_width = (grid_height * 2).max(16) as i32;
+        // Height: enough rows for the larger team with spacing, capped at 16
+        let grid_height = ((max_team * 2) + 2).max(8).min(16) as i32;
+        // Width: smaller ratio for more compact arenas, around 20-24 width
+        let grid_width = (grid_height + 8).max(16).min(24) as i32;
         self.grid = Grid::new(grid_width, grid_height);
         
-        // Spawn team A on the left side
+        // Spawn team A on the left side (centered vertically with random offset)
+        let team_a_center_y = self.grid.height() / 2;
+        let team_a_spread = (team_a_data.len() as i32).min(self.grid.height() - 2);
+        let team_a_start_y = team_a_center_y - team_a_spread / 2;
+        
         for (idx, data) in team_a_data.iter().enumerate() {
             let species = self.species_loader.get_species(&data.species_id)
                 .ok_or_else(|| format!("Species '{}' not found", data.species_id))?;
             
-            // Space actors 2 rows apart, starting at row 1
-            let y = 1 + (idx as i32 * 2) % (self.grid.height() - 1);
-            let mut actor = self.create_actor_from_species(idx as u32, species, 0, 2, y);
+            // Space actors vertically with small random offset
+            let base_y = team_a_start_y + (idx as i32 * team_a_spread / team_a_data.len().max(1) as i32);
+            let random_offset = (self.rng.gen_range(0..5) as i32) - 2; // -2 to +2
+            let y = (base_y + random_offset).clamp(1, self.grid.height() - 2);
+            
+            // Slight random x offset (1-3 from left edge)
+            let x = 2 + (self.rng.gen_range(0..2) as i32);
+            
+            let mut actor = self.create_actor_from_species(idx as u32, species, 0, x, y);
             
             // Apply variation - either specified or auto-generated
             if let Some(variation) = &data.variation {
@@ -85,18 +95,28 @@ impl Battle {
             self.team_a.push(actor);
         }
         
-        // Spawn team B on the right side
+        // Spawn team B on the right side (centered vertically with random offset)
+        let team_b_center_y = self.grid.height() / 2;
+        let team_b_spread = (team_b_data.len() as i32).min(self.grid.height() - 2);
+        let team_b_start_y = team_b_center_y - team_b_spread / 2;
+        
         for (idx, data) in team_b_data.iter().enumerate() {
             let species = self.species_loader.get_species(&data.species_id)
                 .ok_or_else(|| format!("Species '{}' not found", data.species_id))?;
             
-            // Space actors 2 rows apart, starting at row 1
-            let y = 1 + (idx as i32 * 2) % (self.grid.height() - 1);
+            // Space actors vertically with small random offset
+            let base_y = team_b_start_y + (idx as i32 * team_b_spread / team_b_data.len().max(1) as i32);
+            let random_offset = (self.rng.gen_range(0..5) as i32) - 2; // -2 to +2
+            let y = (base_y + random_offset).clamp(1, self.grid.height() - 2);
+            
+            // Slight random x offset (2-4 from right edge)
+            let x = self.grid.width() - 3 - (self.rng.gen_range(0..2) as i32);
+            
             let mut actor = self.create_actor_from_species(
                 (team_a_data.len() + idx) as u32,
                 species,
                 1,
-                self.grid.width() - 3,
+                x,
                 y
             );
             

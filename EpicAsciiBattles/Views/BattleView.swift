@@ -171,8 +171,10 @@ struct BattleView: View {
                 } else {
                     print("   ⚠️ Failed to get initial state")
                 }
+                
+                // Auto-start battle immediately
+                startSimulation()
             }
-            // Don't auto-start - user will click Step or Auto
         }
         .onDisappear {
             stopSimulation()
@@ -184,7 +186,7 @@ struct BattleView: View {
         
         isSimulating = true
         // Slower tick rate for better visibility (2 ticks per second)
-        timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 0.15, repeats: true) { _ in
             guard let core = run.battleCore else { return }
             
             if core.isFinished() {
@@ -363,6 +365,8 @@ struct BattleGridView: View {
             let offsetX = (geometry.size.width - totalWidth) / 2
             let offsetY = (geometry.size.height - totalHeight) / 2
             
+            let useTileset = TilesetRenderer.shared.isAvailable
+            
             Canvas { context, _ in
                 let groundGlyphs: [Character] = ["`", ".", ",", "'", "\""]
                 let now = Date()
@@ -389,25 +393,40 @@ struct BattleGridView: View {
                 for y in 0..<gridHeight {
                     for x in 0..<gridWidth {
                         let key = y * gridWidth + x
-                        let px = offsetX + CGFloat(x) * cellSize + cellSize / 2
-                        let py = offsetY + CGFloat(y) * cellSize + cellSize / 2
+                        let px = offsetX + CGFloat(x) * cellSize
+                        let py = offsetY + CGFloat(y) * cellSize
                         
                         // Priority: Team A actor > Team B actor > Blip > Terrain
                         if let actor = teamAMap[key] {
-                            let text = Text(String(actor.glyph))
-                                .font(.system(size: fontSize, weight: .bold, design: .monospaced))
-                                .foregroundColor(DFColors.lgreen)
-                            context.draw(text, at: CGPoint(x: px, y: py))
+                            if useTileset {
+                                drawTile(context, char: actor.glyph, at: CGPoint(x: px, y: py), 
+                                        size: cellSize, color: UIColor(DFColors.lgreen))
+                            } else {
+                                let text = Text(String(actor.glyph))
+                                    .font(.system(size: fontSize, weight: .bold, design: .monospaced))
+                                    .foregroundColor(DFColors.lgreen)
+                                context.draw(text, at: CGPoint(x: px + cellSize/2, y: py + cellSize/2))
+                            }
                         } else if let actor = teamBMap[key] {
-                            let text = Text(String(actor.glyph))
-                                .font(.system(size: fontSize, weight: .bold, design: .monospaced))
-                                .foregroundColor(DFColors.lred)
-                            context.draw(text, at: CGPoint(x: px, y: py))
+                            if useTileset {
+                                drawTile(context, char: actor.glyph, at: CGPoint(x: px, y: py), 
+                                        size: cellSize, color: UIColor(DFColors.lred))
+                            } else {
+                                let text = Text(String(actor.glyph))
+                                    .font(.system(size: fontSize, weight: .bold, design: .monospaced))
+                                    .foregroundColor(DFColors.lred)
+                                context.draw(text, at: CGPoint(x: px + cellSize/2, y: py + cellSize/2))
+                            }
                         } else if let blip = blipMap[key] {
-                            let text = Text(blip.glyph)
-                                .font(.system(size: fontSize, weight: .bold, design: .monospaced))
-                                .foregroundColor(blip.color)
-                            context.draw(text, at: CGPoint(x: px, y: py))
+                            if useTileset {
+                                drawTile(context, char: Character(blip.glyph), at: CGPoint(x: px, y: py),
+                                        size: cellSize, color: UIColor(blip.color))
+                            } else {
+                                let text = Text(blip.glyph)
+                                    .font(.system(size: fontSize, weight: .bold, design: .monospaced))
+                                    .foregroundColor(blip.color)
+                                context.draw(text, at: CGPoint(x: px + cellSize/2, y: py + cellSize/2))
+                            }
                         } else {
                             // Terrain background
                             let hash = (x * 73856093) ^ (y * 19349663)
@@ -416,14 +435,32 @@ struct BattleGridView: View {
                             let baseGreen = 0.32 + jitter * 0.1
                             let baseRed = 0.18 + jitter * 0.05
                             let baseBlue = 0.18
-                            let text = Text(String(glyph))
-                                .font(.system(size: fontSize * 0.6, design: .monospaced))
-                                .foregroundColor(Color(red: baseRed, green: baseGreen, blue: baseBlue).opacity(0.75))
-                            context.draw(text, at: CGPoint(x: px, y: py))
+                            let terrainColor = Color(red: baseRed, green: baseGreen, blue: baseBlue).opacity(0.75)
+                            
+                            if useTileset {
+                                drawTile(context, char: glyph, at: CGPoint(x: px, y: py),
+                                        size: cellSize * 0.8, color: UIColor(terrainColor))
+                            } else {
+                                let text = Text(String(glyph))
+                                    .font(.system(size: fontSize * 0.6, design: .monospaced))
+                                    .foregroundColor(terrainColor)
+                                context.draw(text, at: CGPoint(x: px + cellSize/2, y: py + cellSize/2))
+                            }
                         }
                     }
                 }
             }
+        }
+    }
+    
+    private func drawTile(_ context: GraphicsContext, char: Character, at point: CGPoint, size: CGFloat, color: UIColor) {
+        let renderer = TilesetRenderer.shared
+        let index = renderer.tileIndex(for: char)
+        let scale = size / CGFloat(renderer.sourceTileWidth)
+        
+        if let tileImage = renderer.getTile(index: index, color: color, scale: scale) {
+            let resolved = context.resolve(Image(uiImage: tileImage))
+            context.draw(resolved, at: CGPoint(x: point.x + size/2, y: point.y + size/2))
         }
     }
 }

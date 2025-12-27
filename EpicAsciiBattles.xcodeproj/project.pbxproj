@@ -21,6 +21,7 @@
 		AABB0001DFCOLORS00000001 /* DFColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB0002DFCOLORS00000002 /* DFColors.swift */; };
 		AABB0003NAMEGEN000000003 /* NameGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB0004NAMEGEN000000004 /* NameGenerator.swift */; };
 		AABB0005TILESET000000005 /* TilesetRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB0006TILESET000000006 /* TilesetRenderer.swift */; };
+		AABB000AASSETSCAT0000000A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AABB0009ASSETS0000000009 /* Assets.xcassets */; };
 		AF20271FE6840527EE0DB741 /* BattleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC9EB1036B2D523AA65FC64 /* BattleView.swift */; };
 		B1C38DC7AC39013B1C7F3445 /* LeaderboardStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4251AB55D4BD4AA4FFDAF287 /* LeaderboardStore.swift */; };
 		F2314B4113FF850C4207F081 /* RunSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 080399203A06C01F677EF66D /* RunSummaryView.swift */; };
@@ -52,6 +53,8 @@
 		AABB0002DFCOLORS00000002 /* DFColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DFColors.swift; sourceTree = "<group>"; };
 		AABB0004NAMEGEN000000004 /* NameGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NameGenerator.swift; sourceTree = "<group>"; };
 		AABB0006TILESET000000006 /* TilesetRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TilesetRenderer.swift; sourceTree = "<group>"; };
+		AABB0008TILESET000000008 /* curses_800x600.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = curses_800x600.png; sourceTree = "<group>"; };
+		AABB0009ASSETS0000000009 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B7F42F159028F9FA41DCA27B /* RoundResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundResultView.swift; sourceTree = "<group>"; };
 		BDC9EB1036B2D523AA65FC64 /* BattleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BattleView.swift; sourceTree = "<group>"; };
 		C022BE4DE948670391E9E481 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
@@ -80,12 +83,14 @@
 		5089D5B9C2591D64663820D2 /* EpicAsciiBattles */ = {
 			isa = PBXGroup;
 			children = (
+				AABB0009ASSETS0000000009 /* Assets.xcassets */,
 				C2CB70DD8554A7D1F83A8A96 /* ContentView.swift */,
 				FC16B1BE9191082D2238ED57 /* EpicAsciiBattlesApp.swift */,
 				9858F618B737C2A97AF26303 /* Info.plist */,
 				95A18A685C4072D0BA23A796 /* Core */,
 				E71A48DA4C1E91328366BF94 /* Models */,
 				D1DDBD108CF582F67C074FFE /* Persistence */,
+				AABB0007RESOURCES00000007 /* Resources */,
 				73CE3D15A96544FECEDF4EA0 /* Views */,
 			);
 			path = EpicAsciiBattles;
@@ -134,6 +139,14 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		AABB0007RESOURCES00000007 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				AABB0008TILESET000000008 /* curses_800x600.png */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -143,6 +156,7 @@
 			buildPhases = (
 				F23AEC7DA80C0E4D9FB957AF /* Build Rust Library */,
 				E02AF8B7F83A4757A4ED027F /* Sources */,
+				AABB000BRESOURCES0000000B /* Resources */,
 				FD99F8EC2F00655C00B0951D /* CopyFiles */,
 				FD99F8ED2F0065B900B0951D /* ShellScript */,
 			);
@@ -220,9 +234,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rsync -a \"${SRCROOT}/EpicAsciiBattles/Resources/species/\" \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/species/\"\n";
+			shellScript = "rsync -a \"${SRCROOT}/EpicAsciiBattles/Resources/species/\" \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/species/\"\nrsync -a \"${SRCROOT}/EpicAsciiBattles/Resources/curses_800x600.png\" \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AABB000BRESOURCES0000000B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AABB000AASSETSCAT0000000A /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		E02AF8B7F83A4757A4ED027F /* Sources */ = {

@@ -5,57 +5,96 @@ struct HomeView: View {
     
     var body: some View {
         ZStack {
-            // Background ASCII pattern
+            // Background
+            DFColors.black.ignoresSafeArea()
+            
+            // ASCII pattern background
             ASCIIBackgroundView()
                 .ignoresSafeArea()
             
             VStack(spacing: 40) {
                 Spacer()
                 
-                // Title
-                Text("EPIC ASCII BATTLES")
-                    .font(.system(.largeTitle, design: .monospaced, weight: .bold))
-                    .foregroundColor(.white)
-                    .shadow(radius: 10)
+                // Title with ASCII border
+                VStack(spacing: 10) {
+                    Text("═══════════════════════")
+                        .font(.system(.title3, design: .monospaced))
+                        .foregroundColor(DFColors.yellow)
+                    
+                    Text("EPIC ASCII BATTLES")
+                        .font(.system(.largeTitle, design: .monospaced, weight: .bold))
+                        .foregroundColor(DFColors.white)
+                    
+                    Text("═══════════════════════")
+                        .font(.system(.title3, design: .monospaced))
+                        .foregroundColor(DFColors.yellow)
+                }
+                .padding()
+                .background(DFColors.dgray.opacity(0.5))
+                .cornerRadius(10)
                 
                 Spacer()
                 
-                // Main buttons
+                // Main buttons with ASCII styling
                 VStack(spacing: 20) {
                     Button(action: {
                         gameState.startNewRun()
                     }) {
-                        Text("Start Run")
-                            .font(.system(.title2, design: .monospaced, weight: .semibold))
-                            .frame(maxWidth: 300)
-                            .padding()
-                            .background(Color.green)
-                            .foregroundColor(.black)
-                            .cornerRadius(10)
+                        HStack {
+                            Text("▶")
+                                .font(.system(.title2, design: .monospaced))
+                            Text("Start Run")
+                                .font(.system(.title2, design: .monospaced, weight: .semibold))
+                        }
+                        .frame(maxWidth: 300)
+                        .padding()
+                        .background(DFColors.lgreen)
+                        .foregroundColor(DFColors.black)
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(DFColors.white, lineWidth: 2)
+                        )
                     }
                     
                     Button(action: {
                         gameState.navigationPath.append(NavigationDestination.leaderboard)
                     }) {
-                        Text("Leaderboard")
-                            .font(.system(.title3, design: .monospaced))
-                            .frame(maxWidth: 300)
-                            .padding()
-                            .background(Color.blue.opacity(0.8))
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
+                        HStack {
+                            Text("☆")
+                                .font(.system(.title2, design: .monospaced))
+                            Text("Leaderboard")
+                                .font(.system(.title3, design: .monospaced))
+                        }
+                        .frame(maxWidth: 300)
+                        .padding()
+                        .background(DFColors.dgray)
+                        .foregroundColor(DFColors.yellow)
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(DFColors.yellow.opacity(0.5), lineWidth: 1)
+                        )
                     }
                     
                     Button(action: {
                         gameState.navigationPath.append(NavigationDestination.settings)
                     }) {
-                        Text("Settings")
-                            .font(.system(.title3, design: .monospaced))
-                            .frame(maxWidth: 300)
-                            .padding()
-                            .background(Color.gray.opacity(0.8))
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
+                        HStack {
+                            Text("⚙")
+                                .font(.system(.title2, design: .monospaced))
+                            Text("Settings")
+                                .font(.system(.title3, design: .monospaced))
+                        }
+                        .frame(maxWidth: 300)
+                        .padding()
+                        .background(DFColors.dgray)
+                        .foregroundColor(DFColors.lgray)
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(DFColors.lgray.opacity(0.5), lineWidth: 1)
+                        )
                     }
                 }
                 
@@ -68,8 +107,8 @@ struct HomeView: View {
 }
 
 struct ASCIIBackgroundView: View {
-    let characters = ["@", "#", "%", "&", "*", "+", "=", "-", ".", ":", "~"]
-    let gridSize = 20
+    let characters = [".", "·", ":", "░", "▒"]
+    let gridSize = 30
     
     var body: some View {
         GeometryReader { geometry in
@@ -79,20 +118,20 @@ struct ASCIIBackgroundView: View {
             Canvas { context, size in
                 for row in 0..<gridSize {
                     for col in 0..<gridSize {
-                        let char = characters.randomElement() ?? "#"
+                        let char = characters.randomElement() ?? "."
                         let x = CGFloat(col) * cellWidth + cellWidth / 2
                         let y = CGFloat(row) * cellHeight + cellHeight / 2
                         
+                        let opacity = Double.random(in: 0.05...0.15)
                         let text = Text(char)
-                            .font(.system(.body, design: .monospaced))
-                            .foregroundColor(Color.gray.opacity(0.2))
+                            .font(.system(size: 12, design: .monospaced))
+                            .foregroundColor(DFColors.lgreen.opacity(opacity))
                         
                         context.draw(text, at: CGPoint(x: x, y: y))
                     }
                 }
             }
         }
-        .background(Color.black)
     }
 }
 

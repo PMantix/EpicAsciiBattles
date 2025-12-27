@@ -8,11 +8,11 @@ class TilesetRenderer {
     private var tilesetImage: UIImage?
     private var tileCache: [TileCacheKey: UIImage] = [:]
     
-    // CP437 tileset is 16x16 characters, each tile is 8x8 pixels in the source
+    // CP437 tileset is 16x16 characters, each tile is 16x16 pixels in the source
     let tilesPerRow = 16
     let tilesPerCol = 16
-    let sourceTileWidth = 8
-    let sourceTileHeight = 8
+    let sourceTileWidth = 16
+    let sourceTileHeight = 16
     
     private init() {
         loadTileset()
@@ -79,33 +79,103 @@ class TilesetRenderer {
     
     /// Colorize a tile - replace white pixels with the target color, magenta becomes transparent
     private func colorizeTile(_ tile: CGImage, with color: UIColor, scale: CGFloat) -> UIImage? {
-        let width = Int(CGFloat(tile.width) * scale)
-        let height = Int(CGFloat(tile.height) * scale)
+        let sourceWidth = tile.width
+        let sourceHeight = tile.height
+        let width = Int(CGFloat(sourceWidth) * scale)
+        let height = Int(CGFloat(sourceHeight) * scale)
         
         guard width > 0, height > 0 else { return nil }
         
-        UIGraphicsBeginImageContextWithOptions(CGSize(width: width, height: height), false, 1.0)
-        guard let context = UIGraphicsGetCurrentContext() else {
-            UIGraphicsEndImageContext()
-            return nil
+        // Create a bitmap context to read pixel data
+        guard let colorSpace = CGColorSpaceCreateDeviceRGB() as CGColorSpace?,
+              let bitmapContext = CGContext(
+                data: nil,
+                width: sourceWidth,
+                height: sourceHeight,
+                bitsPerComponent: 8,
+                bytesPerRow: sourceWidth * 4,
+                space: colorSpace,
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+              ) else { return nil }
+        
+        // Draw the source tile into our context
+        bitmapContext.draw(tile, in: CGRect(x: 0, y: 0, width: sourceWidth, height: sourceHeight))
+        
+        // Get pixel data
+        guard let pixelData = bitmapContext.data else { return nil }
+        let pixels = pixelData.bindMemory(to: UInt8.self, capacity: sourceWidth * sourceHeight * 4)
+        
+        // Get target color components
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        color.getRed(&r, green: &g, blue: &b, alpha: &a)
+        let targetR = UInt8(r * 255)
+        let targetG = UInt8(g * 255)
+        let targetB = UInt8(b * 255)
+        
+        // Process each pixel
+        for y in 0..<sourceHeight {
+            for x in 0..<sourceWidth {
+                let offset = (y * sourceWidth + x) * 4
+                let red = pixels[offset]
+                let green = pixels[offset + 1]
+                let blue = pixels[offset + 2]
+                
+                // Check if pixel is magenta (RGB: 255, 0, 255) - make it transparent
+                // More precise magenta detection: red and blue high, green very low
+                let isMagenta = (red > 200 && blue > 200 && green < 50) ||
+                               (red > 240 && blue > 240 && green < 100)
+                
+                if isMagenta {
+                    pixels[offset] = 0
+                    pixels[offset + 1] = 0
+                    pixels[offset + 2] = 0
+                    pixels[offset + 3] = 0  // Alpha = 0 (transparent)
+                }
+                // Check if pixel is white or bright - colorize it
+                else if red > 50 || green > 50 || blue > 50 {
+                    // Use the brightness to modulate the target color
+                    let brightness = CGFloat(max(red, green, blue)) / 255.0
+                    pixels[offset] = UInt8(CGFloat(targetR) * brightness)
+                    pixels[offset + 1] = UInt8(CGFloat(targetG) * brightness)
+                    pixels[offset + 2] = UInt8(CGFloat(targetB) * brightness)
+                    pixels[offset + 3] = 255  // Keep opaque
+                } else {
+                    // Dark pixels become transparent
+                    pixels[offset] = 0
+                    pixels[offset + 1] = 0
+                    pixels[offset + 2] = 0
+                    pixels[offset + 3] = 0
+                }
+            }
         }
         
-        // Flip for UIKit coordinate system
-        context.translateBy(x: 0, y: CGFloat(height))
-        context.scaleBy(x: 1.0, y: -1.0)
+        // Create image from modified pixel data
+        guard let outputImage = bitmapContext.makeImage() else { return nil }
         
-        // Draw the original tile
-        context.draw(tile, in: CGRect(x: 0, y: 0, width: width, height: height))
+        // Scale if needed
+        if scale != 1.0 {
+            UIGraphicsBeginImageContextWithOptions(CGSize(width: width, height: height), false, 1.0)
+            guard let drawContext = UIGraphicsGetCurrentContext() else {
+                UIGraphicsEndImageContext()
+                return nil
+            }
+            
+            // Use nearest neighbor for pixel-perfect scaling
+            drawContext.interpolationQuality = .none
+            drawContext.setShouldAntialias(false)
+            
+            // Flip coordinate system for proper drawing
+            drawContext.translateBy(x: 0, y: CGFloat(height))
+            drawContext.scaleBy(x: 1.0, y: -1.0)
+            
+            drawContext.draw(outputImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+            
+            let result = UIGraphicsGetImageFromCurrentImageContext()
+            UIGraphicsEndImageContext()
+            return result
+        }
         
-        // Apply color as a multiply blend
-        context.setBlendMode(.sourceIn)
-        context.setFillColor(color.cgColor)
-        context.fill(CGRect(x: 0, y: 0, width: width, height: height))
-        
-        let result = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        
-        return result
+        return UIImage(cgImage: outputImage)
     }
     
     /// Check if tileset is available

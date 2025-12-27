@@ -5,7 +5,7 @@ struct RoundOfferView: View {
     
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            DFColors.black.ignoresSafeArea()
             
             if let run = gameState.currentRun {
                 VStack(spacing: 30) {
@@ -13,11 +13,11 @@ struct RoundOfferView: View {
                     VStack(spacing: 10) {
                         Text("Round \(run.round)")
                             .font(.system(.title, design: .monospaced, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(DFColors.white)
                         
                         Text("Score: \(run.score)")
                             .font(.system(.title3, design: .monospaced))
-                            .foregroundColor(.gray)
+                            .foregroundColor(DFColors.lgray)
                     }
                     .padding(.top, 40)
                     
@@ -30,7 +30,7 @@ struct RoundOfferView: View {
                             name: run.teamAName,
                             count: run.teamACount,
                             glyph: run.teamAGlyph,
-                            color: .green
+                            color: DFColors.lgreen
                         )
                         .onTapGesture {
                             selectTeam(0, run: run)
@@ -38,14 +38,14 @@ struct RoundOfferView: View {
                         
                         Text("VS")
                             .font(.system(.title, design: .monospaced, weight: .heavy))
-                            .foregroundColor(.red)
+                            .foregroundColor(DFColors.lred)
                         
                         // Team B
                         TeamCard(
                             name: run.teamBName,
                             count: run.teamBCount,
                             glyph: run.teamBGlyph,
-                            color: .blue
+                            color: DFColors.lred
                         )
                         .onTapGesture {
                             selectTeam(1, run: run)
@@ -57,7 +57,7 @@ struct RoundOfferView: View {
                     
                     Text("Tap a team to choose your pick")
                         .font(.system(.caption, design: .monospaced))
-                        .foregroundColor(.gray)
+                        .foregroundColor(DFColors.lgray)
                         .padding(.bottom, 40)
                 }
             }
@@ -79,26 +79,88 @@ struct TeamCard: View {
     
     var body: some View {
         VStack(spacing: 15) {
-            Text(String(glyph))
-                .font(.system(size: 80, design: .monospaced))
-                .foregroundColor(color)
+            // Show individual combatants
+            CombatantGrid(glyph: glyph, count: count, color: color)
             
-            Text(name)
+            Text("x\(count) \(name)")
                 .font(.system(.title2, design: .monospaced, weight: .semibold))
-                .foregroundColor(.white)
-            
-            Text("Count: \(count)")
-                .font(.system(.title3, design: .monospaced))
-                .foregroundColor(.gray)
+                .foregroundColor(DFColors.white)
         }
         .frame(maxWidth: .infinity)
         .padding(30)
-        .background(Color.gray.opacity(0.2))
+        .background(DFColors.dgray.opacity(0.3))
         .cornerRadius(15)
         .overlay(
             RoundedRectangle(cornerRadius: 15)
                 .stroke(color.opacity(0.5), lineWidth: 2)
         )
+    }
+}
+
+struct CombatantGrid: View {
+    let glyph: Character
+    let count: Int
+    let color: Color
+    
+    var body: some View {
+        let columns = min(count, 5)
+        let rows = (count + columns - 1) / columns
+        
+        VStack(spacing: 4) {
+            ForEach(0..<rows, id: \.self) { row in
+                HStack(spacing: 4) {
+                    ForEach(0..<columns, id: \.self) { col in
+                        let index = row * columns + col
+                        if index < count {
+                            CombatantTile(glyph: glyph, color: color)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct CombatantTile: View {
+    let glyph: Character
+    let color: Color
+    
+    var body: some View {
+        ZStack {
+            if TilesetRenderer.shared.isAvailable {
+                TilesetImage(glyph: glyph, color: color, size: 32)
+            } else {
+                Text(String(glyph))
+                    .font(.system(size: 28, weight: .bold, design: .monospaced))
+                    .foregroundColor(color)
+                    .frame(width: 32, height: 32)
+            }
+        }
+        .background(DFColors.black.opacity(0.3))
+        .cornerRadius(4)
+    }
+}
+
+struct TilesetImage: View {
+    let glyph: Character
+    let color: Color
+    let size: CGFloat
+    
+    var body: some View {
+        let renderer = TilesetRenderer.shared
+        let index = renderer.tileIndex(for: glyph)
+        let scale = size / CGFloat(renderer.sourceTileWidth)
+        
+        if let tileImage = renderer.getTile(index: index, color: UIColor(color), scale: scale) {
+            Image(uiImage: tileImage)
+                .resizable()
+                .frame(width: size, height: size)
+        } else {
+            Text(String(glyph))
+                .font(.system(size: size * 0.7, weight: .bold, design: .monospaced))
+                .foregroundColor(color)
+                .frame(width: size, height: size)
+        }
     }
 }
 
