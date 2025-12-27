@@ -9,6 +9,9 @@ use crate::anatomy::part::Part;
 use crate::variation::VariationGenerator;
 use super::actor::Actor;
 use super::grid::Grid;
+use super::action::Action;
+use super::combat::CombatResolver;
+use super::ai::SimpleAI;
 
 #[derive(Debug, Serialize)]
 pub struct Battle {
@@ -237,10 +240,177 @@ impl Battle {
             return Vec::new();
         }
         
-        let events = Vec::new();
+        let mut events = Vec::new();
         self.tick_count += 1;
         
-        // Check win conditions
+        // 1. Apply bleeding damage to all actors
+        for actor in self.team_a.iter_mut().chain(self.team_b.iter_mut()) {
+            if actor.is_alive() {
+                let bleed_events = CombatResolver::apply_bleeding(actor);
+                events.extend(bleed_events);
+            }
+        }
+        
+        // 2. Regenerate stamina
+        for actor in self.team_a.iter_mut().chain(self.team_b.iter_mut()) {
+            if actor.is_alive() {
+                let regen = (actor.max_stamina / 10).max(5);
+                actor.stamina = (actor.stamina + regen).min(actor.max_stamina);
+            }
+        }
+        
+        // 3. Build turn order based on speed (highest speed acts first)
+        // Collect all alive actors with their indices and team
+        let mut turn_order: Vec<(u32, u8, u32)> = Vec::new(); // (actor_id, team, speed)
+        
+        for actor in &self.team_a {
+            if actor.is_alive() {
+                turn_order.push((actor.id, 0, actor.speed));
+            }
+        }
+        
+        for actor in &self.team_b {
+            if actor.is_alive() {
+                turn_order.push((actor.id, 1, actor.speed));
+            }
+        }
+        
+        // Sort by speed (descending), then by actor_id for determinism
+        turn_order.sort_by(|a, b| {
+            b.2.cmp(&a.2).then_with(|| a.0.cmp(&b.0))
+        });
+        
+        // 4. Process each actor's turn individually
+        for (actor_id, team, _speed) in turn_order {
+            // Find the current actor
+            let actor_ref = if team == 0 {
+                self.team_a.iter().find(|a| a.id == actor_id)
+            } else {
+                self.team_b.iter().find(|a| a.id == actor_id)
+            };
+            
+            if actor_ref.is_none() || !actor_ref.unwrap().is_alive() {
+                continue;
+            }
+            
+            // Select action for this actor based on team
+            let action = if team == 0 {
+                SimpleAI::select_action(
+                    &mut self.rng,
+                    actor_ref.unwrap(),
+                    &self.team_a,
+                    &self.team_b,
+                )
+            } else {
+                SimpleAI::select_action(
+                    &mut self.rng,
+                    actor_ref.unwrap(),
+                    &self.team_b,
+                    &self.team_a,
+                )
+            };
+            
+            if action.is_none() {
+                continue;
+            }
+            
+            // Execute the action
+            match action.unwrap() {
+                Action::Attack {
+                    attacker_id,
+                    target_id,
+                    attack_id,
+                } => {
+                    // Determine which teams the attacker and defender are on
+                    let attacker_in_a = self.team_a.iter().any(|a| a.id == attacker_id);
+                    let defender_in_a = self.team_a.iter().any(|a| a.id == target_id);
+                    
+                    // Can't attack same team
+                    if attacker_in_a == defender_in_a {
+                        continue;
+                    }
+                    
+                    // Get attack data from attacker
+                    let attack_opt = {
+                        let attacker = if attacker_in_a {
+                            self.team_a.iter().find(|a| a.id == attacker_id)
+                        } else {
+                            self.team_b.iter().find(|a| a.id == attacker_id)
+                        };
+                        
+                        attacker
+                            .and_then(|a| {
+                                a.get_available_attacks()
+                                    .into_iter()
+                                    .find(|atk| atk.attack_id == attack_id)
+                            })
+                    };
+                    
+                    if let Some(attack) = attack_opt {
+                        // Resolve combat based on team configuration
+                        let combat_events = if attacker_in_a {
+                            // Team A attacks Team B
+                            let attacker = self.team_a.iter_mut().find(|a| a.id == attacker_id);
+                            let defender = self.team_b.iter_mut().find(|a| a.id == target_id);
+                            
+                            if let (Some(attacker), Some(defender)) = (attacker, defender) {
+                                CombatResolver::resolve_attack(&mut self.rng, attacker, defender, &attack)
+                            } else {
+                                Vec::new()
+                            }
+                        } else {
+                            // Team B attacks Team A
+                            let attacker = self.team_b.iter_mut().find(|a| a.id == attacker_id);
+                            let defender = self.team_a.iter_mut().find(|a| a.id == target_id);
+                            
+                            if let (Some(attacker), Some(defender)) = (attacker, defender) {
+                                CombatResolver::resolve_attack(&mut self.rng, attacker, defender, &attack)
+                            } else {
+                                Vec::new()
+                            }
+                        };
+                        
+                        events.extend(combat_events);
+                    }
+                }
+                Action::Move {
+                    actor_id,
+                    target_x,
+                    target_y,
+                } => {
+                    // Find actor
+                    if let Some(actor) = self
+                        .team_a
+                        .iter_mut()
+                        .find(|a| a.id == actor_id)
+                        .or_else(|| self.team_b.iter_mut().find(|a| a.id == actor_id))
+                    {
+                        if actor.is_alive() && actor.speed > 0 {
+                            // Check if target is walkable
+                            if self.grid.is_walkable(target_x, target_y) {
+                                let old_x = actor.x;
+                                let old_y = actor.y;
+                                actor.x = target_x;
+                                actor.y = target_y;
+                                
+                                events.push(BattleEvent::Move {
+                                    actor_id,
+                                    from_x: old_x,
+                                    from_y: old_y,
+                                    to_x: target_x,
+                                    to_y: target_y,
+                                });
+                            }
+                        }
+                    }
+                }
+                Action::Defend { .. } | Action::Wait { .. } => {
+                    // No-op for now
+                }
+            }
+        }
+        
+        // 5. Check win conditions
         let team_a_alive = self.team_a.iter().filter(|a| a.is_alive()).count();
         let team_b_alive = self.team_b.iter().filter(|a| a.is_alive()).count();
         
@@ -251,9 +421,6 @@ impl Battle {
             self.finished = true;
             self.winner = Some(0);
         }
-        
-        // Basic simulation placeholder - will be expanded in Phase 2
-        // For now, just demonstrate event generation
         
         events
     }
