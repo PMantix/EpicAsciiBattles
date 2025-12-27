@@ -26,6 +26,9 @@ targets:
           #!/bin/bash
           set -e
           
+          # Add cargo to PATH
+          export PATH="$HOME/.cargo/bin:$PATH"
+          
           # Build Rust library for the appropriate architecture
           cd "${PROJECT_DIR}/rust"
           

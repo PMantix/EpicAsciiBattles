@@ -6,6 +6,7 @@ mod sim;
 mod anatomy;
 mod species;
 mod events;
+mod variation;
 
 use sim::Battle;
 use events::EventStream;

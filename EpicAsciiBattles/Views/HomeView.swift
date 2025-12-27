@@ -83,9 +83,9 @@ struct ASCIIBackgroundView: View {
                         let x = CGFloat(col) * cellWidth + cellWidth / 2
                         let y = CGFloat(row) * cellHeight + cellHeight / 2
                         
-                        var text = Text(char)
+                        let text = Text(char)
                             .font(.system(.body, design: .monospaced))
-                        text.foregroundColor = Color.gray.opacity(0.2)
+                            .foregroundColor(Color.gray.opacity(0.2))
                         
                         context.draw(text, at: CGPoint(x: x, y: y))
                     }

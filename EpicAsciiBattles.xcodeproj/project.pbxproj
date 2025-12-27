@@ -179,7 +179,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/bin/bash\nset -e\n\n# Build Rust library for the appropriate architecture\ncd \"${PROJECT_DIR}/rust\"\n\nif [ \"${PLATFORM_NAME}\" == \"iphonesimulator\" ]; then\n  if [ \"${ARCHS}\" == \"arm64\" ]; then\n    cargo build --target aarch64-apple-ios-sim --release\n  else\n    cargo build --target x86_64-apple-ios --release\n  fi\nelse\n  cargo build --target aarch64-apple-ios --release\nfi\n";
+			shellScript = "#!/bin/bash\nset -e\n\n# Add cargo to PATH\nexport PATH=\"$HOME/.cargo/bin:$PATH\"\n\n# Build Rust library for the appropriate architecture\ncd \"${PROJECT_DIR}/rust\"\n\nif [ \"${PLATFORM_NAME}\" == \"iphonesimulator\" ]; then\n  if [ \"${ARCHS}\" == \"arm64\" ]; then\n    cargo build --target aarch64-apple-ios-sim --release\n  else\n    cargo build --target x86_64-apple-ios --release\n  fi\nelse\n  cargo build --target aarch64-apple-ios --release\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */

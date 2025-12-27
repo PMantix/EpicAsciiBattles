@@ -18,7 +18,7 @@ struct RunSummaryView: View {
                     // Score
                     VStack(spacing: 10) {
                         Text("\(run.score)")
-                            .font(.system(size: 80, design: .monospaced, weight: .heavy))
+                            .font(.system(size: 80, weight: .heavy, design: .monospaced))
                             .foregroundColor(.yellow)
                         
                         Text("Final Score")

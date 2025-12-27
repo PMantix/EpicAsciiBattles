@@ -1,0 +1,14 @@
+/Users/phillipaquino/Code/EpicAsciiBattles/rust/target/debug/deps/serde-58d2bc71fd82421a.d: /Users/phillipaquino/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/phillipaquino/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/phillipaquino/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/phillipaquino/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/phillipaquino/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/phillipaquino/Code/EpicAsciiBattles/rust/target/debug/build/serde-53b1d5a660df5d9d/out/private.rs
+
+/Users/phillipaquino/Code/EpicAsciiBattles/rust/target/debug/deps/libserde-58d2bc71fd82421a.rlib: /Users/phillipaquino/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/phillipaquino/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/phillipaquino/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/phillipaquino/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/phillipaquino/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/phillipaquino/Code/EpicAsciiBattles/rust/target/debug/build/serde-53b1d5a660df5d9d/out/private.rs
+
+/Users/phillipaquino/Code/EpicAsciiBattles/rust/target/debug/deps/libserde-58d2bc71fd82421a.rmeta: /Users/phillipaquino/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/phillipaquino/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/phillipaquino/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/phillipaquino/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/phillipaquino/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/phillipaquino/Code/EpicAsciiBattles/rust/target/debug/build/serde-53b1d5a660df5d9d/out/private.rs
+
+/Users/phillipaquino/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs:
+/Users/phillipaquino/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs:
+/Users/phillipaquino/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs:
+/Users/phillipaquino/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs:
+/Users/phillipaquino/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs:
+/Users/phillipaquino/Code/EpicAsciiBattles/rust/target/debug/build/serde-53b1d5a660df5d9d/out/private.rs:
+
+# env-dep:OUT_DIR=/Users/phillipaquino/Code/EpicAsciiBattles/rust/target/debug/build/serde-53b1d5a660df5d9d/out
