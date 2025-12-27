@@ -1,0 +1,63 @@
+name: EpicAsciiBattles
+options:
+  bundleIdPrefix: com.epicasciibattles
+  deploymentTarget:
+    iOS: "16.0"
+  
+settings:
+  SWIFT_VERSION: "5.9"
+  IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+  TARGETED_DEVICE_FAMILY: "1,2"
+  SUPPORTS_MACCATALYST: false
+
+targets:
+  EpicAsciiBattles:
+    type: application
+    platform: iOS
+    sources:
+      - EpicAsciiBattles
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.epicasciibattles.app
+      LIBRARY_SEARCH_PATHS: "$(PROJECT_DIR)/rust/target/aarch64-apple-ios-sim/release"
+      OTHER_LDFLAGS: "-lepic_ascii_battles_core -lresolv"
+      SWIFT_OBJC_BRIDGING_HEADER: ""
+    preBuildScripts:
+      - script: |
+          #!/bin/bash
+          set -e
+          
+          # Build Rust library for the appropriate architecture
+          cd "${PROJECT_DIR}/rust"
+          
+          if [ "${PLATFORM_NAME}" == "iphonesimulator" ]; then
+            if [ "${ARCHS}" == "arm64" ]; then
+              cargo build --target aarch64-apple-ios-sim --release
+            else
+              cargo build --target x86_64-apple-ios --release
+            fi
+          else
+            cargo build --target aarch64-apple-ios --release
+          fi
+        name: Build Rust Library
+        showEnvVars: false
+    info:
+      path: EpicAsciiBattles/Info.plist
+      properties:
+        CFBundleDisplayName: Epic ASCII Battles
+        CFBundleIdentifier: $(PRODUCT_BUNDLE_IDENTIFIER)
+        CFBundleInfoDictionaryVersion: 6.0
+        CFBundleName: $(PRODUCT_NAME)
+        CFBundlePackageType: APPL
+        CFBundleShortVersionString: 0.1.0
+        CFBundleVersion: 1
+        LSRequiresIPhoneOS: true
+        UILaunchStoryboardName: LaunchScreen
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight

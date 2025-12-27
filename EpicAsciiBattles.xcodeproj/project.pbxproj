@@ -1,0 +1,397 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		005D5AF71B804887D349FCD4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2CB70DD8554A7D1F83A8A96 /* ContentView.swift */; };
+		09498B347DF032FF046057BE /* EpicAsciiBattlesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC16B1BE9191082D2238ED57 /* EpicAsciiBattlesApp.swift */; };
+		284D0AA379D83FAAB85717D9 /* RoundOfferView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45DFAA2936D613552B0B12EF /* RoundOfferView.swift */; };
+		2D762B8B565964E80B31BBA5 /* LeaderboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2F010FE806DAD8D49EEA141 /* LeaderboardView.swift */; };
+		362EAD38CB0BC48DE79ACF76 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C022BE4DE948670391E9E481 /* HomeView.swift */; };
+		400379715B8BF433C1E04FF1 /* GameModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304913137D4BBCD682083037 /* GameModels.swift */; };
+		6D8AA2CFABAD41573DD7F68D /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 620167CA616A1DC777FB7CAC /* SettingsView.swift */; };
+		9138FB5EA959CF7B515D4A8B /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6E7891D234E2E2CA76FAD05 /* GameState.swift */; };
+		96495086F4C24E85BF6086A7 /* RoundResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F42F159028F9FA41DCA27B /* RoundResultView.swift */; };
+		984F66575076DC157F7E2119 /* GameCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 534E825819BDC3BDA8757DD3 /* GameCore.swift */; };
+		9C22E86EAEF4D749AD387C8A /* BattleEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19562224CA9BC39C11FB0B3E /* BattleEvent.swift */; };
+		AF20271FE6840527EE0DB741 /* BattleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC9EB1036B2D523AA65FC64 /* BattleView.swift */; };
+		B1C38DC7AC39013B1C7F3445 /* LeaderboardStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4251AB55D4BD4AA4FFDAF287 /* LeaderboardStore.swift */; };
+		F2314B4113FF850C4207F081 /* RunSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 080399203A06C01F677EF66D /* RunSummaryView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		04FD9F5000C2BF8B363E334C /* EpicAsciiBattles.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = EpicAsciiBattles.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		080399203A06C01F677EF66D /* RunSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunSummaryView.swift; sourceTree = "<group>"; };
+		19562224CA9BC39C11FB0B3E /* BattleEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BattleEvent.swift; sourceTree = "<group>"; };
+		304913137D4BBCD682083037 /* GameModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameModels.swift; sourceTree = "<group>"; };
+		4251AB55D4BD4AA4FFDAF287 /* LeaderboardStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardStore.swift; sourceTree = "<group>"; };
+		45DFAA2936D613552B0B12EF /* RoundOfferView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundOfferView.swift; sourceTree = "<group>"; };
+		534E825819BDC3BDA8757DD3 /* GameCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCore.swift; sourceTree = "<group>"; };
+		620167CA616A1DC777FB7CAC /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		9858F618B737C2A97AF26303 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		A2F010FE806DAD8D49EEA141 /* LeaderboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardView.swift; sourceTree = "<group>"; };
+		B7F42F159028F9FA41DCA27B /* RoundResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundResultView.swift; sourceTree = "<group>"; };
+		BDC9EB1036B2D523AA65FC64 /* BattleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BattleView.swift; sourceTree = "<group>"; };
+		C022BE4DE948670391E9E481 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		C2CB70DD8554A7D1F83A8A96 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		C6E7891D234E2E2CA76FAD05 /* GameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
+		FC16B1BE9191082D2238ED57 /* EpicAsciiBattlesApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpicAsciiBattlesApp.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		0F01DEED1838F7B9E989ABC8 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				04FD9F5000C2BF8B363E334C /* EpicAsciiBattles.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4E0A355F68DEB4194305DE43 = {
+			isa = PBXGroup;
+			children = (
+				5089D5B9C2591D64663820D2 /* EpicAsciiBattles */,
+				0F01DEED1838F7B9E989ABC8 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		5089D5B9C2591D64663820D2 /* EpicAsciiBattles */ = {
+			isa = PBXGroup;
+			children = (
+				C2CB70DD8554A7D1F83A8A96 /* ContentView.swift */,
+				FC16B1BE9191082D2238ED57 /* EpicAsciiBattlesApp.swift */,
+				9858F618B737C2A97AF26303 /* Info.plist */,
+				95A18A685C4072D0BA23A796 /* Core */,
+				E71A48DA4C1E91328366BF94 /* Models */,
+				D1DDBD108CF582F67C074FFE /* Persistence */,
+				73CE3D15A96544FECEDF4EA0 /* Views */,
+			);
+			path = EpicAsciiBattles;
+			sourceTree = "<group>";
+		};
+		73CE3D15A96544FECEDF4EA0 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				BDC9EB1036B2D523AA65FC64 /* BattleView.swift */,
+				C022BE4DE948670391E9E481 /* HomeView.swift */,
+				A2F010FE806DAD8D49EEA141 /* LeaderboardView.swift */,
+				45DFAA2936D613552B0B12EF /* RoundOfferView.swift */,
+				B7F42F159028F9FA41DCA27B /* RoundResultView.swift */,
+				080399203A06C01F677EF66D /* RunSummaryView.swift */,
+				620167CA616A1DC777FB7CAC /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		95A18A685C4072D0BA23A796 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				534E825819BDC3BDA8757DD3 /* GameCore.swift */,
+				C6E7891D234E2E2CA76FAD05 /* GameState.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		D1DDBD108CF582F67C074FFE /* Persistence */ = {
+			isa = PBXGroup;
+			children = (
+				4251AB55D4BD4AA4FFDAF287 /* LeaderboardStore.swift */,
+			);
+			path = Persistence;
+			sourceTree = "<group>";
+		};
+		E71A48DA4C1E91328366BF94 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				19562224CA9BC39C11FB0B3E /* BattleEvent.swift */,
+				304913137D4BBCD682083037 /* GameModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		131E81431E0C28F414533E42 /* EpicAsciiBattles */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B65510F09E29871495CC35E2 /* Build configuration list for PBXNativeTarget "EpicAsciiBattles" */;
+			buildPhases = (
+				F23AEC7DA80C0E4D9FB957AF /* Build Rust Library */,
+				E02AF8B7F83A4757A4ED027F /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = EpicAsciiBattles;
+			packageProductDependencies = (
+			);
+			productName = EpicAsciiBattles;
+			productReference = 04FD9F5000C2BF8B363E334C /* EpicAsciiBattles.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D66218249EE67C71B6EE28E2 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+			};
+			buildConfigurationList = 588E51389A04F9C3692DD4C7 /* Build configuration list for PBXProject "EpicAsciiBattles" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 4E0A355F68DEB4194305DE43;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				131E81431E0C28F414533E42 /* EpicAsciiBattles */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		F23AEC7DA80C0E4D9FB957AF /* Build Rust Library */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build Rust Library";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\nset -e\n\n# Build Rust library for the appropriate architecture\ncd \"${PROJECT_DIR}/rust\"\n\nif [ \"${PLATFORM_NAME}\" == \"iphonesimulator\" ]; then\n  if [ \"${ARCHS}\" == \"arm64\" ]; then\n    cargo build --target aarch64-apple-ios-sim --release\n  else\n    cargo build --target x86_64-apple-ios --release\n  fi\nelse\n  cargo build --target aarch64-apple-ios --release\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		E02AF8B7F83A4757A4ED027F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9C22E86EAEF4D749AD387C8A /* BattleEvent.swift in Sources */,
+				AF20271FE6840527EE0DB741 /* BattleView.swift in Sources */,
+				005D5AF71B804887D349FCD4 /* ContentView.swift in Sources */,
+				09498B347DF032FF046057BE /* EpicAsciiBattlesApp.swift in Sources */,
+				984F66575076DC157F7E2119 /* GameCore.swift in Sources */,
+				400379715B8BF433C1E04FF1 /* GameModels.swift in Sources */,
+				9138FB5EA959CF7B515D4A8B /* GameState.swift in Sources */,
+				362EAD38CB0BC48DE79ACF76 /* HomeView.swift in Sources */,
+				B1C38DC7AC39013B1C7F3445 /* LeaderboardStore.swift in Sources */,
+				2D762B8B565964E80B31BBA5 /* LeaderboardView.swift in Sources */,
+				284D0AA379D83FAAB85717D9 /* RoundOfferView.swift in Sources */,
+				96495086F4C24E85BF6086A7 /* RoundResultView.swift in Sources */,
+				F2314B4113FF850C4207F081 /* RunSummaryView.swift in Sources */,
+				6D8AA2CFABAD41573DD7F68D /* SettingsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1BA0D7EC721F02D78C1E157E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		1BEBEFC8762BFDBB0ACDDF76 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		404C72AC715DCDEB093EE83E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = EpicAsciiBattles/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/rust/target/aarch64-apple-ios-sim/release";
+				OTHER_LDFLAGS = "-lepic_ascii_battles_core -lresolv";
+				PRODUCT_BUNDLE_IDENTIFIER = com.epicasciibattles.app;
+				SDKROOT = iphoneos;
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		90193B3BBBE3883D428F5DFB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = EpicAsciiBattles/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/rust/target/aarch64-apple-ios-sim/release";
+				OTHER_LDFLAGS = "-lepic_ascii_battles_core -lresolv";
+				PRODUCT_BUNDLE_IDENTIFIER = com.epicasciibattles.app;
+				SDKROOT = iphoneos;
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		588E51389A04F9C3692DD4C7 /* Build configuration list for PBXProject "EpicAsciiBattles" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1BEBEFC8762BFDBB0ACDDF76 /* Debug */,
+				1BA0D7EC721F02D78C1E157E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B65510F09E29871495CC35E2 /* Build configuration list for PBXNativeTarget "EpicAsciiBattles" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				404C72AC715DCDEB093EE83E /* Debug */,
+				90193B3BBBE3883D428F5DFB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D66218249EE67C71B6EE28E2 /* Project object */;
+}
