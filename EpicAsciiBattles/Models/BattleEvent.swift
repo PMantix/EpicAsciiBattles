@@ -12,62 +12,82 @@ enum BattleEvent: Codable {
     
     enum CodingKeys: String, CodingKey {
         case type
-        case actorId, fromX, fromY, toX, toY
-        case attackerId, defenderId, partId, damage, attackName
-        case amount, gibChar, x, y
+        case actorId, actor_id, fromX, fromY, toX, toY, from_x, from_y, to_x, to_y
+        case attackerId, attacker_id, defenderId, defender_id, partId, part_id, damage, attackName, attack_name
+        case amount, gibChar, gib_char, x, y
         case status, active
     }
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let type = try container.decode(String.self, forKey: .type)
+
+        // Helpers to decode snake_case or camelCase
+        func decodeU32(_ primary: CodingKeys, alt: CodingKeys? = nil) throws -> UInt32 {
+            if let value = try container.decodeIfPresent(UInt32.self, forKey: primary) {
+                return value
+            }
+            if let alt = alt, let value = try container.decodeIfPresent(UInt32.self, forKey: alt) {
+                return value
+            }
+            throw DecodingError.keyNotFound(primary, .init(codingPath: container.codingPath, debugDescription: "Missing key \(primary.rawValue)"))
+        }
+        func decodeI32(_ primary: CodingKeys, alt: CodingKeys? = nil) throws -> Int32 {
+            if let value = try container.decodeIfPresent(Int32.self, forKey: primary) {
+                return value
+            }
+            if let alt = alt, let value = try container.decodeIfPresent(Int32.self, forKey: alt) {
+                return value
+            }
+            throw DecodingError.keyNotFound(primary, .init(codingPath: container.codingPath, debugDescription: "Missing key \(primary.rawValue)"))
+        }
         
         switch type {
-        case "Move":
-            let actorId = try container.decode(UInt32.self, forKey: .actorId)
-            let fromX = try container.decode(Int32.self, forKey: .fromX)
-            let fromY = try container.decode(Int32.self, forKey: .fromY)
-            let toX = try container.decode(Int32.self, forKey: .toX)
-            let toY = try container.decode(Int32.self, forKey: .toY)
+        case "Move", "move":
+            let actorId = try decodeU32(.actorId, alt: .actor_id)
+            let fromX = try decodeI32(.fromX, alt: .from_x)
+            let fromY = try decodeI32(.fromY, alt: .from_y)
+            let toX = try decodeI32(.toX, alt: .to_x)
+            let toY = try decodeI32(.toY, alt: .to_y)
             self = .move(actorId: actorId, fromX: fromX, fromY: fromY, toX: toX, toY: toY)
             
-        case "Hit":
-            let attackerId = try container.decode(UInt32.self, forKey: .attackerId)
-            let defenderId = try container.decode(UInt32.self, forKey: .defenderId)
+        case "Hit", "hit":
+            let attackerId = try decodeU32(.attackerId, alt: .attacker_id)
+            let defenderId = try decodeU32(.defenderId, alt: .defender_id)
             let partId = try container.decode(String.self, forKey: .partId)
-            let damage = try container.decode(UInt32.self, forKey: .damage)
+            let damage = try decodeU32(.damage)
             let attackName = try container.decode(String.self, forKey: .attackName)
             self = .hit(attackerId: attackerId, defenderId: defenderId, partId: partId, damage: damage, attackName: attackName)
             
-        case "Bleed":
-            let actorId = try container.decode(UInt32.self, forKey: .actorId)
-            let amount = try container.decode(UInt32.self, forKey: .amount)
+        case "Bleed", "bleed":
+            let actorId = try decodeU32(.actorId, alt: .actor_id)
+            let amount = try decodeU32(.amount)
             self = .bleed(actorId: actorId, amount: amount)
             
-        case "Sever":
-            let actorId = try container.decode(UInt32.self, forKey: .actorId)
+        case "Sever", "sever":
+            let actorId = try decodeU32(.actorId, alt: .actor_id)
             let partId = try container.decode(String.self, forKey: .partId)
             let gibCharStr = try container.decode(String.self, forKey: .gibChar)
             let gibChar = gibCharStr.first ?? " "
-            let x = try container.decode(Int32.self, forKey: .x)
-            let y = try container.decode(Int32.self, forKey: .y)
+            let x = try decodeI32(.x)
+            let y = try decodeI32(.y)
             self = .sever(actorId: actorId, partId: partId, gibChar: gibChar, x: x, y: y)
             
-        case "Death":
-            let actorId = try container.decode(UInt32.self, forKey: .actorId)
-            let x = try container.decode(Int32.self, forKey: .x)
-            let y = try container.decode(Int32.self, forKey: .y)
+        case "Death", "death":
+            let actorId = try decodeU32(.actorId, alt: .actor_id)
+            let x = try decodeI32(.x)
+            let y = try decodeI32(.y)
             self = .death(actorId: actorId, x: x, y: y)
             
-        case "Vomit":
-            let actorId = try container.decode(UInt32.self, forKey: .actorId)
-            let amount = try container.decode(UInt32.self, forKey: .amount)
-            let x = try container.decode(Int32.self, forKey: .x)
-            let y = try container.decode(Int32.self, forKey: .y)
+        case "Vomit", "vomit":
+            let actorId = try decodeU32(.actorId, alt: .actor_id)
+            let amount = try decodeU32(.amount)
+            let x = try decodeI32(.x)
+            let y = try decodeI32(.y)
             self = .vomit(actorId: actorId, amount: amount, x: x, y: y)
             
-        case "StatusChange":
-            let actorId = try container.decode(UInt32.self, forKey: .actorId)
+        case "StatusChange", "statusChange":
+            let actorId = try decodeU32(.actorId, alt: .actor_id)
             let status = try container.decode(String.self, forKey: .status)
             let active = try container.decode(Bool.self, forKey: .active)
             self = .statusChange(actorId: actorId, status: status, active: active)
@@ -130,6 +150,32 @@ enum BattleEvent: Codable {
             try container.encode(active, forKey: .active)
         }
     }
+    
+    /// Convert event to readable text
+    func describe() -> String {
+        switch self {
+        case .move(let actorId, _, _, let toX, let toY):
+            return "Actor \(actorId) moves to (\(toX), \(toY))"
+            
+        case .hit(let attackerId, let defenderId, let partId, let damage, let attackName):
+            return "Actor \(attackerId) \(attackName)s Actor \(defenderId)'s \(partId.replacingOccurrences(of: "_", with: " ")) for \(damage) damage!"
+            
+        case .bleed(let actorId, let amount):
+            return "Actor \(actorId) bleeds for \(amount) damage"
+            
+        case .sever(let actorId, let partId, _, _, _):
+            return "Actor \(actorId)'s \(partId.replacingOccurrences(of: "_", with: " ")) was severed!"
+            
+        case .death(let actorId, _, _):
+            return "💀 Actor \(actorId) has died!"
+            
+        case .vomit(let actorId, _, _, _):
+            return "Actor \(actorId) vomits from pain"
+            
+        case .statusChange(let actorId, let status, let active):
+            return "Actor \(actorId) is \(active ? "now" : "no longer") \(status)"
+        }
+    }
 }
 
 /// Battle state snapshot
@@ -138,11 +184,73 @@ struct BattleState: Codable {
     let tickCount: UInt64
     let finished: Bool
     let winner: Int?
+    let grid: GridInfo
+    let teamA: [ActorInfo]
+    let teamB: [ActorInfo]
     
     enum CodingKeys: String, CodingKey {
         case seed
         case tickCount = "tick_count"
         case finished
         case winner
+        case grid
+        case teamA = "team_a"
+        case teamB = "team_b"
+    }
+}
+
+struct GridInfo: Codable {
+    let width: Int32
+    let height: Int32
+}
+
+struct ActorInfo: Codable {
+    let id: UInt32
+    let speciesId: String
+    let glyph: Character
+    let team: UInt8
+    let x: Int32
+    let y: Int32
+    let hp: Int32
+    let maxHp: Int32
+    let isAlive: Bool
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case speciesId = "species_id"
+        case glyph
+        case team
+        case x
+        case y
+        case hp
+        case maxHp = "max_hp"
+        case isAlive = "is_alive"
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UInt32.self, forKey: .id)
+        speciesId = try container.decode(String.self, forKey: .speciesId)
+        let glyphStr = try container.decode(String.self, forKey: .glyph)
+        glyph = glyphStr.first ?? " "
+        team = try container.decode(UInt8.self, forKey: .team)
+        x = try container.decode(Int32.self, forKey: .x)
+        y = try container.decode(Int32.self, forKey: .y)
+        hp = try container.decode(Int32.self, forKey: .hp)
+        maxHp = try container.decode(Int32.self, forKey: .maxHp)
+        isAlive = try container.decode(Bool.self, forKey: .isAlive)
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(speciesId, forKey: .speciesId)
+        try container.encode(String(glyph), forKey: .glyph)
+        try container.encode(team, forKey: .team)
+        try container.encode(x, forKey: .x)
+        try container.encode(y, forKey: .y)
+        try container.encode(hp, forKey: .hp)
+        try container.encode(maxHp, forKey: .maxHp)
+        try container.encode(isAlive, forKey: .isAlive)
     }
 }
