@@ -412,28 +412,37 @@ impl Battle {
                     target_x,
                     target_y,
                 } => {
-                    // Find actor
-                    if let Some(actor) = self
-                        .team_a
-                        .iter_mut()
-                        .find(|a| a.id == actor_id)
-                        .or_else(|| self.team_b.iter_mut().find(|a| a.id == actor_id))
-                    {
-                        if actor.is_alive() && actor.speed > 0 {
-                            // Check if target is walkable
-                            if self.grid.is_walkable(target_x, target_y) {
-                                let old_x = actor.x;
-                                let old_y = actor.y;
-                                actor.x = target_x;
-                                actor.y = target_y;
-                                
-                                events.push(BattleEvent::Move {
-                                    actor_id,
-                                    from_x: old_x,
-                                    from_y: old_y,
-                                    to_x: target_x,
-                                    to_y: target_y,
-                                });
+                    // Check if any other actor is at the target position
+                    let occupant_id = self.find_actor_at(target_x, target_y, Some(actor_id));
+                    
+                    if let Some(occ_id) = occupant_id {
+                        // Collision! Try to bump the occupant
+                        let bump_events = self.try_bump_actor(actor_id, occ_id, target_x, target_y);
+                        events.extend(bump_events);
+                    } else {
+                        // No collision, normal move
+                        if let Some(actor) = self
+                            .team_a
+                            .iter_mut()
+                            .find(|a| a.id == actor_id)
+                            .or_else(|| self.team_b.iter_mut().find(|a| a.id == actor_id))
+                        {
+                            if actor.is_alive() && actor.speed > 0 {
+                                // Check if target is walkable
+                                if self.grid.is_walkable(target_x, target_y) {
+                                    let old_x = actor.x;
+                                    let old_y = actor.y;
+                                    actor.x = target_x;
+                                    actor.y = target_y;
+                                    
+                                    events.push(BattleEvent::Move {
+                                        actor_id,
+                                        from_x: old_x,
+                                        from_y: old_y,
+                                        to_x: target_x,
+                                        to_y: target_y,
+                                    });
+                                }
                             }
                         }
                     }
@@ -454,6 +463,95 @@ impl Battle {
         } else if team_b_alive == 0 {
             self.finished = true;
             self.winner = Some(0);
+        }
+        
+        events
+    }
+    
+    /// Find an actor at a position (excluding a specific actor)
+    fn find_actor_at(&self, x: i32, y: i32, exclude: Option<u32>) -> Option<u32> {
+        for actor in &self.team_a {
+            if actor.is_alive() && actor.x == x && actor.y == y {
+                if exclude.map_or(true, |ex| actor.id != ex) {
+                    return Some(actor.id);
+                }
+            }
+        }
+        for actor in &self.team_b {
+            if actor.is_alive() && actor.x == x && actor.y == y {
+                if exclude.map_or(true, |ex| actor.id != ex) {
+                    return Some(actor.id);
+                }
+            }
+        }
+        None
+    }
+    
+    /// Try to bump an actor out of a position, returning events
+    fn try_bump_actor(&mut self, bumper_id: u32, bumped_id: u32, target_x: i32, target_y: i32) -> Vec<BattleEvent> {
+        let mut events = Vec::new();
+        
+        // 50% chance to successfully bump
+        if self.rng.gen_range(0..100) >= 50 {
+            return events; // Failed to bump, no movement
+        }
+        
+        // Find a free adjacent cell for the bumped actor
+        let directions = [
+            (1, 0), (-1, 0), (0, 1), (0, -1),
+            (1, 1), (1, -1), (-1, 1), (-1, -1),
+        ];
+        
+        // Shuffle directions for randomness
+        let mut shuffled: Vec<(i32, i32)> = directions.to_vec();
+        for i in (1..shuffled.len()).rev() {
+            let j = self.rng.gen_range(0..=i);
+            shuffled.swap(i, j);
+        }
+        
+        let mut bump_target: Option<(i32, i32)> = None;
+        for (dx, dy) in shuffled {
+            let new_x = target_x + dx;
+            let new_y = target_y + dy;
+            if self.grid.is_walkable(new_x, new_y) && self.find_actor_at(new_x, new_y, None).is_none() {
+                bump_target = Some((new_x, new_y));
+                break;
+            }
+        }
+        
+        if let Some((new_x, new_y)) = bump_target {
+            // Move the bumped actor
+            if let Some(bumped) = self.team_a.iter_mut().find(|a| a.id == bumped_id)
+                .or_else(|| self.team_b.iter_mut().find(|a| a.id == bumped_id)) 
+            {
+                bumped.x = new_x;
+                bumped.y = new_y;
+                
+                events.push(BattleEvent::Bump {
+                    bumper_id,
+                    bumped_id,
+                    to_x: new_x,
+                    to_y: new_y,
+                });
+            }
+            
+            // Now move the bumper to the original target
+            if let Some(bumper) = self.team_a.iter_mut().find(|a| a.id == bumper_id)
+                .or_else(|| self.team_b.iter_mut().find(|a| a.id == bumper_id))
+            {
+                let old_x = bumper.x;
+                let old_y = bumper.y;
+                bumper.x = target_x;
+                bumper.y = target_y;
+                
+                events.push(BattleEvent::Move {
+                    actor_id: bumper_id,
+                    from_x: old_x,
+                    from_y: old_y,
+                    to_x: target_x,
+                    to_y: target_y,
+                });
+            }
         }
         
         events

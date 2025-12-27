@@ -10,7 +10,7 @@ struct BattleView: View {
     
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            DFColors.black.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Top bar
@@ -18,28 +18,28 @@ struct BattleView: View {
                     HStack {
                         Text("Round \(run.round)")
                             .font(.system(.headline, design: .monospaced))
-                            .foregroundColor(.white)
+                            .foregroundColor(DFColors.white)
                         
                         Spacer()
                         
                         if let state = battleState {
                             Text("Team A: \(state.teamA.count) | Team B: \(state.teamB.count)")
                                 .font(.system(.caption, design: .monospaced))
-                                .foregroundColor(.gray)
+                                .foregroundColor(DFColors.lgray)
                         } else {
                             Text("Team A: \(run.teamACount) | Team B: \(run.teamBCount)")
                                 .font(.system(.caption, design: .monospaced))
-                                .foregroundColor(.gray)
+                                .foregroundColor(DFColors.lgray)
                         }
                     }
                     .padding()
-                    .background(Color.gray.opacity(0.3))
+                    .background(DFColors.dgray)
                 }
                 
                 // Battle grid
                 ZStack {
                     Rectangle()
-                        .fill(Color.black)
+                        .fill(DFColors.black)
                     
                     if let state = battleState {
                         BattleGridView(battleState: state, blips: hitBlips)
@@ -68,7 +68,7 @@ struct BattleView: View {
                     HStack {
                         Text("Combat Log")
                             .font(.system(.caption, design: .monospaced))
-                            .foregroundColor(.white)
+                            .foregroundColor(DFColors.white)
                         
                         Spacer()
                         
@@ -99,7 +99,7 @@ struct BattleView: View {
                             .padding(4)
                         }
                         .frame(height: 120)
-                        .background(Color.black.opacity(0.9))
+                        .background(DFColors.black.opacity(0.9))
                         .onChange(of: combatLog.count) { _ in
                             if let lastIndex = combatLog.indices.last {
                                 proxy.scrollTo(lastIndex, anchor: .bottom)
@@ -145,7 +145,7 @@ struct BattleView: View {
                     }
                 }
                 .padding()
-                .background(Color.gray.opacity(0.3))
+                .background(DFColors.dgray)
             }
         }
         .navigationBarBackButtonHidden(true)
@@ -168,14 +168,6 @@ struct BattleView: View {
                     print("   Initial state: Grid \(state.grid.width)x\(state.grid.height)")
                     print("   Team A actors: \(state.teamA.count)")
                     print("   Team B actors: \(state.teamB.count)")
-                    
-                    // Print actor positions
-                    for actor in state.teamA {
-                        print("     Team A Actor \(actor.id): '\(actor.glyph)' at (\(actor.x), \(actor.y))")
-                    }
-                    for actor in state.teamB {
-                        print("     Team B Actor \(actor.id): '\(actor.glyph)' at (\(actor.x), \(actor.y))")
-                    }
                 } else {
                     print("   ⚠️ Failed to get initial state")
                 }
@@ -304,6 +296,11 @@ struct BattleView: View {
                 if status == "miss", let (x, y) = actorPosition(actorId, state: state) {
                     addBlip(x: x, y: y, glyph: "?", color: .yellow, ttl: 0.25)
                 }
+            case .bump(_, let bumpedId, let toX, let toY):
+                addBlip(x: toX, y: toY, glyph: "*", color: .yellow, ttl: 0.3)
+                if let (x, y) = actorPosition(bumpedId, state: state) {
+                    addBlip(x: x, y: y, glyph: "!", color: .orange, ttl: 0.25)
+                }
             case .move:
                 break
             }
@@ -399,12 +396,12 @@ struct BattleGridView: View {
                         if let actor = teamAMap[key] {
                             let text = Text(String(actor.glyph))
                                 .font(.system(size: fontSize, weight: .bold, design: .monospaced))
-                                .foregroundColor(.green)
+                                .foregroundColor(DFColors.lgreen)
                             context.draw(text, at: CGPoint(x: px, y: py))
                         } else if let actor = teamBMap[key] {
                             let text = Text(String(actor.glyph))
                                 .font(.system(size: fontSize, weight: .bold, design: .monospaced))
-                                .foregroundColor(.red)
+                                .foregroundColor(DFColors.lred)
                             context.draw(text, at: CGPoint(x: px, y: py))
                         } else if let blip = blipMap[key] {
                             let text = Text(blip.glyph)
@@ -444,7 +441,7 @@ struct CombatLogView: View {
                 HStack {
                     Text("Combat Log")
                         .font(.system(.headline, design: .monospaced))
-                        .foregroundColor(.white)
+                        .foregroundColor(DFColors.white)
                     
                     Spacer()
                     
@@ -452,7 +449,7 @@ struct CombatLogView: View {
                         isShowing = false
                     }) {
                         Image(systemName: "xmark")
-                            .foregroundColor(.gray)
+                            .foregroundColor(DFColors.lgray)
                     }
                 }
                 .padding()
@@ -473,7 +470,7 @@ struct CombatLogView: View {
                         .padding()
                     }
                     .frame(height: 300)
-                    .background(Color.black.opacity(0.9))
+                    .background(DFColors.black.opacity(0.9))
                     .onChange(of: logEntries.count) { _ in
                         if let lastIndex = logEntries.indices.last {
                             proxy.scrollTo(lastIndex, anchor: .bottom)

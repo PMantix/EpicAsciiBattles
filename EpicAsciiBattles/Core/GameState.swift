@@ -85,13 +85,16 @@ class GameRun: ObservableObject {
     }
     
     func pickTeam(_ team: Int) {
+        print("📍 [INIT] pickTeam(\(team)) starting...")
         pickedTeam = team
         battleFinished = false
         wasCorrect = false
         
         // Initialize battle simulation
         let battleSeed = seed &+ UInt64(round)
+        print("📍 [INIT] Creating GameCore with seed \(battleSeed)")
         battleCore = GameCore(seed: battleSeed)
+        print("📍 [INIT] GameCore created")
         
         // Get species directory from bundle
         guard let speciesDir = Bundle.main.resourcePath?.appending("/species") else {

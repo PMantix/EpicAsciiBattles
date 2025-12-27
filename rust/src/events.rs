@@ -44,6 +44,13 @@ pub enum BattleEvent {
         status: String,
         active: bool,
     },
+    /// Two actors collided and one was bumped to a new position
+    Bump {
+        bumper_id: u32,
+        bumped_id: u32,
+        to_x: i32,
+        to_y: i32,
+    },
 }
 
 pub struct EventStream {

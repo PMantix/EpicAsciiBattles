@@ -9,6 +9,7 @@ enum BattleEvent: Codable {
     case death(actorId: UInt32, x: Int32, y: Int32)
     case vomit(actorId: UInt32, amount: UInt32, x: Int32, y: Int32)
     case statusChange(actorId: UInt32, status: String, active: Bool)
+    case bump(bumperId: UInt32, bumpedId: UInt32, toX: Int32, toY: Int32)
     
     enum CodingKeys: String, CodingKey {
         case type
@@ -16,6 +17,7 @@ enum BattleEvent: Codable {
         case attackerId, attacker_id, defenderId, defender_id, partId, part_id, damage, attackName, attack_name
         case amount, gibChar, gib_char, x, y
         case status, active
+        case bumperId, bumper_id, bumpedId, bumped_id
     }
     
     init(from decoder: Decoder) throws {
@@ -101,6 +103,13 @@ enum BattleEvent: Codable {
             let active = try container.decode(Bool.self, forKey: .active)
             self = .statusChange(actorId: actorId, status: status, active: active)
             
+        case "Bump", "bump":
+            let bumperId = try decodeU32(.bumperId, alt: .bumper_id)
+            let bumpedId = try decodeU32(.bumpedId, alt: .bumped_id)
+            let toX = try decodeI32(.toX, alt: .to_x)
+            let toY = try decodeI32(.toY, alt: .to_y)
+            self = .bump(bumperId: bumperId, bumpedId: bumpedId, toX: toX, toY: toY)
+            
         default:
             throw DecodingError.dataCorruptedError(forKey: .type, in: container, debugDescription: "Unknown event type: \(type)")
         }
@@ -157,32 +166,103 @@ enum BattleEvent: Codable {
             try container.encode(actorId, forKey: .actorId)
             try container.encode(status, forKey: .status)
             try container.encode(active, forKey: .active)
+            
+        case .bump(let bumperId, let bumpedId, let toX, let toY):
+            try container.encode("Bump", forKey: .type)
+            try container.encode(bumperId, forKey: .bumperId)
+            try container.encode(bumpedId, forKey: .bumpedId)
+            try container.encode(toX, forKey: .toX)
+            try container.encode(toY, forKey: .toY)
         }
     }
     
-    /// Convert event to readable text
-    func describe() -> String {
+    /// Convert event to readable text (using actor names lookup)
+    func describe(names: [UInt32: String] = [:]) -> String {
+        // Helper to get name or fallback
+        func name(_ id: UInt32) -> String {
+            names[id] ?? "the combatant"
+        }
+        
+        // Helper for part names
+        func partName(_ partId: String) -> String {
+            partId.replacingOccurrences(of: "_", with: " ")
+                  .replacingOccurrences(of: "0", with: "")
+                  .replacingOccurrences(of: "1", with: "")
+                  .trimmingCharacters(in: .whitespaces)
+        }
+        
+        // Flavor verbs for attacks
+        func attackVerb(_ attackName: String) -> String {
+            let lower = attackName.lowercased()
+            if lower.contains("peck") { return ["pecks at", "jabs", "stabs at", "strikes"].randomElement()! }
+            if lower.contains("bite") { return ["bites", "chomps", "sinks teeth into", "mauls"].randomElement()! }
+            if lower.contains("scratch") { return ["scratches", "rakes", "tears at", "claws"].randomElement()! }
+            if lower.contains("kick") { return ["kicks", "stomps", "slams"].randomElement()! }
+            return "strikes"
+        }
+        
+        // Wound severity descriptions
+        func woundDesc(_ damage: UInt32) -> String {
+            if damage >= 15 { return ["tearing it badly", "ripping it open", "leaving a grievous wound", "shredding it"].randomElement()! }
+            if damage >= 8 { return ["wounding it", "drawing blood", "cutting deep", "leaving a gash"].randomElement()! }
+            if damage >= 3 { return ["scratching it", "nicking it", "grazing it"].randomElement()! }
+            return ["barely scratching it", "glancing off", "leaving a small mark"].randomElement()!
+        }
+        
         switch self {
-        case .move(let actorId, _, _, let toX, let toY):
-            return "Actor \(actorId) moves to (\(toX), \(toY))"
+        case .move:
+            // Don't log movement - too spammy
+            return ""
             
         case .hit(let attackerId, let defenderId, let partId, let damage, let attackName):
-            return "Actor \(attackerId) \(attackName)s Actor \(defenderId)'s \(partId.replacingOccurrences(of: "_", with: " ")) for \(damage) damage!"
+            let attacker = name(attackerId)
+            let defender = name(defenderId)
+            let part = partName(partId)
+            let verb = attackVerb(attackName)
+            let wound = woundDesc(damage)
+            return "\(attacker) \(verb) \(defender)'s \(part), \(wound)!"
             
-        case .bleed(let actorId, let amount):
-            return "Actor \(actorId) bleeds for \(amount) damage"
+        case .bleed(let actorId, _):
+            let actor = name(actorId)
+            let desc = ["bleeds profusely", "drips blood", "leaves a trail of blood", "is bleeding badly"].randomElement()!
+            return "\(actor) \(desc)."
             
         case .sever(let actorId, let partId, _, _, _):
-            return "Actor \(actorId)'s \(partId.replacingOccurrences(of: "_", with: " ")) was severed!"
+            let actor = name(actorId)
+            let part = partName(partId)
+            let desc = ["is torn away", "flies off", "is ripped free", "is severed completely"].randomElement()!
+            return "💥 \(actor)'s \(part) \(desc)!"
             
         case .death(let actorId, _, _):
-            return "💀 Actor \(actorId) has died!"
+            let actor = name(actorId)
+            let desc = ["collapses", "falls lifeless", "crumples to the ground", "breathes their last", "is slain"].randomElement()!
+            return "💀 \(actor) \(desc)!"
             
         case .vomit(let actorId, _, _, _):
-            return "Actor \(actorId) vomits from pain"
+            let actor = name(actorId)
+            return "🤢 \(actor) vomits from the pain!"
             
         case .statusChange(let actorId, let status, let active):
-            return "Actor \(actorId) is \(active ? "now" : "no longer") \(status)"
+            let actor = name(actorId)
+            if status == "miss" && !active {
+                return "" // Don't log miss recovery
+            }
+            if status == "miss" {
+                return "\(actor)'s attack misses!"
+            }
+            if status == "fleeing" && active {
+                return "😱 \(actor) panics and tries to flee!"
+            }
+            if status == "fleeing" && !active {
+                return "\(actor) regains their composure."
+            }
+            return active ? "\(actor) is now \(status)." : "\(actor) recovers."
+            
+        case .bump(let bumperId, let bumpedId, _, _):
+            let bumper = name(bumperId)
+            let bumped = name(bumpedId)
+            let desc = ["slams into", "crashes into", "barrels into", "collides with", "shoves"].randomElement()!
+            return "💥 \(bumper) \(desc) \(bumped)!"
         }
     }
 }
