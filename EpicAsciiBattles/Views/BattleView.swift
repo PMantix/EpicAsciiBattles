@@ -413,6 +413,36 @@ struct BattleView: View {
         }
     }
     
+    private func formatActorName(_ actor: ActorInfo) -> String {
+        // Format species name with "the" article
+        let speciesName = actor.speciesId.replacingOccurrences(of: "_", with: " ")
+        return "the \(speciesName)"
+    }
+    
+    private func eventStyle(for event: BattleEvent) -> (Color, Bool) {
+        switch event {
+        case .death:
+            return (DFColors.lred, true)
+        case .sever:
+            return (Color(red: 1.0, green: 0.4, blue: 0.2), true) // Orange-red
+        case .hit(_, _, _, let damage, _):
+            return (damage >= 10 ? Color(red: 1.0, green: 0.3, blue: 0.3) : .green, damage >= 15)
+        case .bleed:
+            return (Color(red: 0.8, green: 0.2, blue: 0.2), false)
+        case .vomit:
+            return (Color(red: 0.5, green: 0.8, blue: 0.3), false)
+        case .statusChange(_, let status, let active):
+            if status == "fleeing" && active {
+                return (DFColors.yellow, false)
+            }
+            return (.gray, false)
+        case .bump:
+            return (DFColors.yellow, false)
+        case .move:
+            return (.gray, false)
+        }
+    }
+    
     func finishBattle() {
         stopSimulation()
         
@@ -662,36 +692,6 @@ struct BattleGridView: View {
         var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
         color.getRed(&r, green: &g, blue: &b, alpha: &a)
         return UIColor(red: min(1.0, r * factor), green: min(1.0, g * factor), blue: min(1.0, b * factor), alpha: a)
-    }
-    
-    private func formatActorName(_ actor: ActorInfo) -> String {
-        // Format species name with "the" article
-        let speciesName = actor.speciesId.replacingOccurrences(of: "_", with: " ")
-        return "the \(speciesName)"
-    }
-    
-    private func eventStyle(for event: BattleEvent) -> (Color, Bool) {
-        switch event {
-        case .death:
-            return (DFColors.lred, true)
-        case .sever:
-            return (Color(red: 1.0, green: 0.4, blue: 0.2), true) // Orange-red
-        case .hit(_, _, _, let damage, _):
-            return (damage >= 10 ? Color(red: 1.0, green: 0.3, blue: 0.3) : .green, damage >= 15)
-        case .bleed:
-            return (Color(red: 0.8, green: 0.2, blue: 0.2), false)
-        case .vomit:
-            return (Color(red: 0.5, green: 0.8, blue: 0.3), false)
-        case .statusChange(_, let status, let active):
-            if status == "fleeing" && active {
-                return (DFColors.yellow, false)
-            }
-            return (.gray, false)
-        case .bump:
-            return (DFColors.yellow, false)
-        case .move:
-            return (.gray, false)
-        }
     }
 }
 

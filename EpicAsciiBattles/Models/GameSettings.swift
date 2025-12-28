@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 
 /// Game settings persisted to UserDefaults
 class GameSettings: ObservableObject {
