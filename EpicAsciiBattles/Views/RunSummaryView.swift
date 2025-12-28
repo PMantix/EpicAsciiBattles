@@ -80,7 +80,6 @@ struct RunSummaryView: View {
                         gameState.endRun()
                     }) {
                         HStack(spacing: 8) {
-                            TilesetTextView(text: "H", color: DFColors.black, size: 18)
                             TilesetTextView(text: "Back to Home", color: DFColors.black, size: 18)
                         }
                         .frame(maxWidth: 300)

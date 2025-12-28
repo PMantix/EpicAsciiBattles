@@ -8,93 +8,102 @@ struct RoundOfferView: View {
             DFColors.black.ignoresSafeArea()
             
             if let run = gameState.currentRun {
-                VStack(spacing: 20) {
-                    // Header
-                    VStack(spacing: 8) {
-                        TilesetTextView(text: "Round \(run.round)", color: DFColors.white, size: 20)
-                        TilesetTextView(text: "Score: \(run.score)", color: DFColors.lgray, size: 14)
-                    }
-                    .padding(.top, 30)
-                    
-                    // Instructions
-                    TilesetTextView(text: "Balance the fight!", color: DFColors.yellow, size: 16)
-                    
-                    // Trophy reward indicator
-                    TrophyIndicator(run: run)
-                    
-                    // Team A with adjustment controls
-                    TeamBalanceCard(
-                        name: run.teamAName,
-                        count: run.teamACount,
-                        originalCount: run.originalTeamACount,
-                        glyph: run.teamAGlyph,
-                        color: DFColors.named(run.teamAColorName),
-                        canAdjust: run.adjustmentsRemaining > 0,
-                        onIncrement: { adjustTeamA(run: run, delta: 1) },
-                        onDecrement: { adjustTeamA(run: run, delta: -1) }
-                    )
-                    
-                    TilesetTextView(text: "VS", color: DFColors.yellow, size: 20)
-                    
-                    // Team B with adjustment controls
-                    TeamBalanceCard(
-                        name: run.teamBName,
-                        count: run.teamBCount,
-                        originalCount: run.originalTeamBCount,
-                        glyph: run.teamBGlyph,
-                        color: DFColors.named(run.teamBColorName),
-                        canAdjust: run.adjustmentsRemaining > 0,
-                        onIncrement: { adjustTeamB(run: run, delta: 1) },
-                        onDecrement: { adjustTeamB(run: run, delta: -1) }
-                    )
-                    
-                    // Adjustments remaining
-                    HStack(spacing: 8) {
-                        TilesetTextView(text: "Adjustments:", color: DFColors.lgray, size: 12)
-                        TilesetTextView(text: "\(run.adjustmentsRemaining)/\(run.maxAdjustments)", 
-                                       color: run.adjustmentsRemaining > 0 ? DFColors.lgreen : DFColors.lred, 
-                                       size: 14)
-                    }
-                    .padding(.top, 10)
-                    
-                    Spacer()
-                    
-                    // Fight button
-                    Button(action: {
-                        startBattle(run: run)
-                    }) {
-                        TilesetTextView(text: "[ FIGHT! ]", color: DFColors.black, size: 20)
-                            .padding(.horizontal, 40)
-                            .padding(.vertical, 15)
-                            .background(DFColors.lgreen)
-                            .cornerRadius(10)
-                    }
-                    .padding(.bottom, 30)
-                }
+                RoundOfferContent(run: run, gameState: gameState)
             }
         }
         .navigationBarBackButtonHidden(true)
     }
+}
+
+// Separate view that observes the run directly
+struct RoundOfferContent: View {
+    @ObservedObject var run: GameRun
+    var gameState: GameState
     
-    func adjustTeamA(run: GameRun, delta: Int) {
+    var body: some View {
+        VStack(spacing: 20) {
+            // Header
+            VStack(spacing: 8) {
+                TilesetTextView(text: "Round \(run.round)", color: DFColors.white, size: 20)
+                TilesetTextView(text: "Score: \(run.score)", color: DFColors.lgray, size: 14)
+            }
+            .padding(.top, 30)
+            
+            // Instructions
+            TilesetTextView(text: "Balance the fight!", color: DFColors.yellow, size: 16)
+            
+            // Trophy reward indicator
+            TrophyIndicator(run: run)
+            
+            // Team A with adjustment controls
+            TeamBalanceCard(
+                name: run.teamAName,
+                count: run.teamACount,
+                originalCount: run.originalTeamACount,
+                glyph: run.teamAGlyph,
+                color: DFColors.named(run.teamAColorName),
+                canAdjust: run.adjustmentsRemaining > 0,
+                onIncrement: { adjustTeamA(delta: 1) },
+                onDecrement: { adjustTeamA(delta: -1) }
+            )
+            
+            TilesetTextView(text: "VS", color: DFColors.yellow, size: 20)
+            
+            // Team B with adjustment controls
+            TeamBalanceCard(
+                name: run.teamBName,
+                count: run.teamBCount,
+                originalCount: run.originalTeamBCount,
+                glyph: run.teamBGlyph,
+                color: DFColors.named(run.teamBColorName),
+                canAdjust: run.adjustmentsRemaining > 0,
+                onIncrement: { adjustTeamB(delta: 1) },
+                onDecrement: { adjustTeamB(delta: -1) }
+            )
+            
+            // Adjustments remaining
+            HStack(spacing: 8) {
+                TilesetTextView(text: "Adjustments:", color: DFColors.lgray, size: 12)
+                TilesetTextView(text: "\(run.adjustmentsRemaining)/\(run.maxAdjustments)", 
+                               color: run.adjustmentsRemaining > 0 ? DFColors.lgreen : DFColors.lred, 
+                               size: 14)
+            }
+            .padding(.top, 10)
+            
+            Spacer()
+            
+            // Fight button
+            Button(action: {
+                startBattle()
+            }) {
+                TilesetTextView(text: "[ FIGHT! ]", color: DFColors.black, size: 20)
+                    .padding(.horizontal, 40)
+                    .padding(.vertical, 15)
+                    .background(DFColors.lgreen)
+                    .cornerRadius(10)
+            }
+            .padding(.bottom, 30)
+        }
+    }
+    
+    func adjustTeamA(delta: Int) {
         let newCount = run.teamACount + delta
-        if newCount >= 1 && newCount <= 30 {
+        if newCount >= 1 && newCount <= 40 && run.adjustmentsRemaining > 0 {
             run.teamACount = newCount
             run.adjustmentsUsed += 1
         }
     }
     
-    func adjustTeamB(run: GameRun, delta: Int) {
+    func adjustTeamB(delta: Int) {
         let newCount = run.teamBCount + delta
-        if newCount >= 1 && newCount <= 30 {
+        if newCount >= 1 && newCount <= 40 && run.adjustmentsRemaining > 0 {
             run.teamBCount = newCount
             run.adjustmentsUsed += 1
         }
     }
     
-    func startBattle(run: GameRun) {
-        // No team picking needed - just start the battle
-        run.pickTeam(0) // Always "pick" team A to trigger battle init
+    func startBattle() {
+        run.pickTeam(0)
         gameState.navigationPath.append(NavigationDestination.battle)
     }
 }
