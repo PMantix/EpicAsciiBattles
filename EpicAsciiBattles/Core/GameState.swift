@@ -5,7 +5,7 @@ import SwiftUI
 class GameState: ObservableObject {
     @Published var navigationPath = NavigationPath()
     @Published var currentRun: GameRun?
-    @Published var settings = GameSettings()
+    var settings: GameSettings { GameSettings.shared }
     
     private let leaderboardStore = LeaderboardStore()
     
@@ -77,16 +77,16 @@ class GameRun: ObservableObject {
             ("Duck", "u", 3...12),
             ("Flamingo", "f", 2...8),
             ("Gecko", "e", 5...15),
-            ("Gerbil", "G", 6...18),
-            ("Goose", "g", 2...9),
-            ("Horse", "h", 1...4),
+            ("Gerbil", "g", 6...18),
+            ("Goose", "G", 2...9),
+            ("Horse", "H", 1...4),
             ("Alligator", "A", 1...3),
             ("Lion", "L", 1...3),
             ("Mouse", "m", 8...25),
             ("Rat", "r", 6...20),
             ("Salamander", "l", 4...12),
             ("Snake", "s", 2...8),
-            ("Spider", "x", 5...15),
+            ("Spider", "m", 5...15),
             ("Tiger", "T", 1...3),
             ("Turtle", "t", 2...6),
             ("Wolf", "w", 2...6),
