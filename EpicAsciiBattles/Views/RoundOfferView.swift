@@ -99,25 +99,49 @@ struct RoundOfferView: View {
     }
 }
 
-// Trophy indicator showing potential rewards
+// Trophy indicator showing potential rewards based on closeness
 struct TrophyIndicator: View {
     @ObservedObject var run: GameRun
     
     var body: some View {
-        HStack(spacing: 8) {
-            let tier = run.trophyTier
-            let points = run.calculateScore(adjustmentsRemaining: run.adjustmentsRemaining)
+        VStack(spacing: 6) {
+            TilesetTextView(text: "Rewards for close battles:", color: DFColors.lgray, size: 10)
             
-            // Trophy icons
-            ForEach(0..<3, id: \.self) { i in
-                TilesetTextView(text: "*", 
-                               color: i < tier ? DFColors.yellow : DFColors.dgray, 
-                               size: 18)
+            HStack(spacing: 16) {
+                // Show all three tiers
+                VStack(spacing: 2) {
+                    HStack(spacing: 2) {
+                        TilesetTextView(text: "***", color: DFColors.yellow, size: 14)
+                    }
+                    let points3 = run.calculateScore(survivorCount: 5, totalStartCount: 100) // ~5% = 3 stars
+                    TilesetTextView(text: "+\(points3)", color: DFColors.yellow, size: 10)
+                    TilesetTextView(text: "<10%", color: DFColors.dgray, size: 8)
+                }
+                
+                VStack(spacing: 2) {
+                    HStack(spacing: 2) {
+                        TilesetTextView(text: "**", color: DFColors.yellow, size: 14)
+                        TilesetTextView(text: "*", color: DFColors.dgray, size: 14)
+                    }
+                    let points2 = run.calculateScore(survivorCount: 20, totalStartCount: 100) // ~20% = 2 stars
+                    TilesetTextView(text: "+\(points2)", color: DFColors.yellow, size: 10)
+                    TilesetTextView(text: "<25%", color: DFColors.dgray, size: 8)
+                }
+                
+                VStack(spacing: 2) {
+                    HStack(spacing: 2) {
+                        TilesetTextView(text: "*", color: DFColors.yellow, size: 14)
+                        TilesetTextView(text: "**", color: DFColors.dgray, size: 14)
+                    }
+                    let points1 = run.calculateScore(survivorCount: 40, totalStartCount: 100) // ~40% = 1 star
+                    TilesetTextView(text: "+\(points1)", color: DFColors.yellow, size: 10)
+                    TilesetTextView(text: "<50%", color: DFColors.dgray, size: 8)
+                }
             }
             
-            TilesetTextView(text: "+\(points)", color: DFColors.yellow, size: 14)
+            TilesetTextView(text: ">50% survivors = BLOWOUT (run ends!)", color: DFColors.lred, size: 9)
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 10)
         .padding(.horizontal, 16)
         .background(DFColors.dgray.opacity(0.3))
         .cornerRadius(8)

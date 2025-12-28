@@ -446,29 +446,48 @@ struct BattleView: View {
     func finishBattle() {
         stopSimulation()
         
-        if let run = gameState.currentRun, let core = run.battleCore {
+        if let run = gameState.currentRun, let core = run.battleCore, let state = core.getState() {
             let winner = Int(core.getWinner())
-            // Win condition: Team A wins the battle
-            run.wasCorrect = (winner == 0)
             run.battleFinished = true
             
             let winningTeam = winner == 0 ? run.teamAName : run.teamBName
             
+            // Count survivors (from both teams combined)
+            let teamASurvivors = state.teamA.filter { $0.isAlive }.count
+            let teamBSurvivors = state.teamB.filter { $0.isAlive }.count
+            let totalSurvivors = teamASurvivors + teamBSurvivors
+            let totalStartCount = run.teamACount + run.teamBCount
+            
+            // Determine if it was a blowout (run ends) or close battle (continue)
+            let isBlowout = run.isBlowout(survivorCount: totalSurvivors, totalStartCount: totalStartCount)
+            let tier = run.trophyTier(survivorCount: totalSurvivors, totalStartCount: totalStartCount)
+            
+            run.wasCorrect = !isBlowout
+            
             combatLog.append(LogEntry(text: "", color: .white, isCritical: false))
             combatLog.append(LogEntry(text: "═══════════════════════════", color: DFColors.yellow, isCritical: true))
             combatLog.append(LogEntry(text: "\(winningTeam) wins!", color: winner == 0 ? DFColors.lgreen : DFColors.lred, isCritical: true))
-            combatLog.append(LogEntry(text: run.wasCorrect ? "VICTORY!" : "DEFEAT", 
-                                     color: run.wasCorrect ? DFColors.lgreen : DFColors.lred, 
-                                     isCritical: true))
+            
+            // Show closeness info
+            let survivorPercent = totalStartCount > 0 ? Int(100.0 * Double(totalSurvivors) / Double(totalStartCount)) : 0
+            combatLog.append(LogEntry(text: "Survivors: \(totalSurvivors)/\(totalStartCount) (\(survivorPercent)%)", 
+                                     color: DFColors.lgray, isCritical: false))
+            
+            if isBlowout {
+                combatLog.append(LogEntry(text: "BLOWOUT! Run ends.", color: DFColors.lred, isCritical: true))
+            } else {
+                let trophyText = String(repeating: "★", count: tier) + String(repeating: "☆", count: 3 - tier)
+                combatLog.append(LogEntry(text: "Close battle! \(trophyText)", color: DFColors.yellow, isCritical: true))
+            }
             combatLog.append(LogEntry(text: "═══════════════════════════", color: DFColors.yellow, isCritical: true))
             
-            if run.wasCorrect {
-                let points = run.calculateScore(adjustmentsRemaining: run.adjustmentsRemaining)
+            if !isBlowout {
+                let points = run.calculateScore(survivorCount: totalSurvivors, totalStartCount: totalStartCount)
                 run.score += points
-                battleResult = BattleResult(isWin: true, points: points, totalScore: run.score)
+                battleResult = BattleResult(isWin: true, points: points, totalScore: run.score, trophyTier: tier, survivorPercent: survivorPercent)
             } else {
                 run.isActive = false
-                battleResult = BattleResult(isWin: false, points: 0, totalScore: run.score)
+                battleResult = BattleResult(isWin: false, points: 0, totalScore: run.score, trophyTier: 0, survivorPercent: survivorPercent)
             }
             
             // Show result overlay (user taps to continue)
@@ -503,6 +522,8 @@ struct BattleResult {
     let isWin: Bool
     let points: Int
     let totalScore: Int
+    let trophyTier: Int
+    let survivorPercent: Int
 }
 
 struct HitBlip: Identifiable {
@@ -784,34 +805,50 @@ struct CombatLogView: View {
     }
 }
 
-// END banner overlay - shows WIN or LOSS with points
+// END banner overlay - shows CLOSE BATTLE or BLOWOUT with trophies
 struct EndBannerView: View {
     @EnvironmentObject var gameState: GameState
     let result: BattleResult?
     let onTap: () -> Void
     
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 16) {
             if let result = result {
                 if result.isWin {
-                    // WIN banner - simple text
-                    TilesetTextView(text: "=== WIN ===", color: DFColors.lgreen, size: 28)
+                    // Close battle - continue!
+                    TilesetTextView(text: "CLOSE BATTLE!", color: DFColors.lgreen, size: 24)
+                    
+                    // Trophy display
+                    HStack(spacing: 4) {
+                        ForEach(0..<3, id: \.self) { i in
+                            TilesetTextView(text: "*", 
+                                           color: i < result.trophyTier ? DFColors.yellow : DFColors.dgray, 
+                                           size: 24)
+                        }
+                    }
+                    
+                    // Survivor info
+                    TilesetTextView(text: "\(result.survivorPercent)% survivors", color: DFColors.lgray, size: 14)
                     
                     // Points earned
-                    TilesetTextView(text: "+\(result.points) points", color: DFColors.yellow, size: 22)
-                    TilesetTextView(text: "Total: \(result.totalScore)", color: DFColors.white, size: 18)
+                    TilesetTextView(text: "+\(result.points) points", color: DFColors.yellow, size: 20)
+                    TilesetTextView(text: "Total: \(result.totalScore)", color: DFColors.white, size: 16)
                 } else {
-                    // LOSS banner - simple text
-                    TilesetTextView(text: "=== LOSS ===", color: DFColors.lred, size: 28)
+                    // Blowout - run ends
+                    TilesetTextView(text: "BLOWOUT!", color: DFColors.lred, size: 24)
+                    
+                    // Survivor info
+                    TilesetTextView(text: "\(result.survivorPercent)% survivors", color: DFColors.lgray, size: 14)
+                    TilesetTextView(text: "Too one-sided!", color: DFColors.lred, size: 16)
                     
                     // Final score
                     TilesetTextView(text: "Final Score: \(result.totalScore)", color: DFColors.yellow, size: 18)
-                    TilesetTextView(text: "Run Ended", color: DFColors.lgray, size: 16)
+                    TilesetTextView(text: "Run Ended", color: DFColors.lgray, size: 14)
                 }
                 
                 // Tap to continue
-                TilesetTextView(text: "[ Tap to Continue ]", color: DFColors.lgray, size: 14)
-                    .padding(.top, 10)
+                TilesetTextView(text: "[ Tap to Continue ]", color: DFColors.lgray, size: 12)
+                    .padding(.top, 8)
             }
         }
         .padding(30)

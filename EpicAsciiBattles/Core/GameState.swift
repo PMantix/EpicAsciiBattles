@@ -69,7 +69,10 @@ class GameRun: ObservableObject {
     func generateNextMatchup() {
         round += 1
         
-        // All available species: (name, glyph, count range, color)
+        // Scale battle size with round number
+        let roundScale = 1.0 + 0.15 * Double(round - 1) // 15% bigger each round
+        
+        // All available species: (name, glyph, base count range, color)
         let species: [(String, String, ClosedRange<Int>, String)] = [
             ("Ant", "a", 10...30, "red"),
             ("Baboon", "b", 1...5, "brown"),
@@ -115,13 +118,16 @@ class GameRun: ObservableObject {
         
         teamAName = teamA.0
         teamAGlyph = Character(teamA.1)
-        teamACount = Int.random(in: teamA.2)
+        // Scale count with round, capped at reasonable max
+        let baseCountA = Int.random(in: teamA.2)
+        teamACount = min(40, max(1, Int(Double(baseCountA) * roundScale)))
         teamAColorName = teamA.3
         originalTeamACount = teamACount
         
         teamBName = teamB.0
         teamBGlyph = Character(teamB.1)
-        teamBCount = Int.random(in: teamB.2)
+        let baseCountB = Int.random(in: teamB.2)
+        teamBCount = min(40, max(1, Int(Double(baseCountB) * roundScale)))
         teamBColorName = teamB.3
         originalTeamBCount = teamBCount
         
@@ -212,35 +218,70 @@ class GameRun: ObservableObject {
         max(0, maxAdjustments - adjustmentsUsed)
     }
     
-    /// Trophy tier based on remaining adjustments (for rewards)
-    var trophyTier: Int {
-        let remaining = adjustmentsRemaining
-        if remaining == 0 { return 0 } // No reward if all used
-        if remaining >= maxAdjustments { return 3 } // Perfect - all remaining
-        if remaining >= maxAdjustments / 2 { return 2 } // Good - half or more
-        return 1 // Some remaining
+    /// Calculate battle closeness ratio (0.0 = total blowout, 1.0 = perfectly close)
+    /// Based on what percentage of total combatants survived
+    func battleCloseness(survivorCount: Int, totalStartCount: Int) -> Double {
+        guard totalStartCount > 0 else { return 0 }
+        let survivorRatio = Double(survivorCount) / Double(totalStartCount)
+        // Lower survivors = closer battle = better
+        // 0% survivors = perfect (1.0 closeness)
+        // 50%+ survivors = blowout (0.0 closeness)
+        let closeness = max(0, 1.0 - (survivorRatio * 2.0))
+        return closeness
     }
     
-    /// Calculate score for winning based on adjustments remaining
-    func calculateScore(adjustmentsRemaining: Int) -> Int {
-        let baseScore = 50
-        let roundMultiplier = 1.0 + 0.1 * Double(round - 1)
+    /// Determine if battle was close enough to continue (not a blowout)
+    /// Blowout threshold: if more than 60% of one side survived, it's a loss
+    func isBlowout(survivorCount: Int, totalStartCount: Int) -> Bool {
+        guard totalStartCount > 0 else { return true }
+        let survivorRatio = Double(survivorCount) / Double(totalStartCount)
+        // More than 50% survivors = blowout (run ends)
+        return survivorRatio > 0.5
+    }
+    
+    /// Trophy tier based on how close the battle was (survivors)
+    /// 3 trophies: 0-10% survivors (near total annihilation)
+    /// 2 trophies: 10-25% survivors (very close)
+    /// 1 trophy: 25-50% survivors (close enough)
+    /// 0 trophies: 50%+ survivors (blowout - run ends)
+    func trophyTier(survivorCount: Int, totalStartCount: Int) -> Int {
+        guard totalStartCount > 0 else { return 0 }
+        let survivorRatio = Double(survivorCount) / Double(totalStartCount)
         
-        // Trophy multiplier based on remaining adjustments
+        if survivorRatio <= 0.10 { return 3 } // Near total annihilation
+        if survivorRatio <= 0.25 { return 2 } // Very close
+        if survivorRatio <= 0.50 { return 1 } // Close enough
+        return 0 // Blowout
+    }
+    
+    /// Calculate score based on closeness (survivors ratio)
+    func calculateScore(survivorCount: Int, totalStartCount: Int) -> Int {
+        let baseScore = 50
+        let roundMultiplier = 1.0 + 0.15 * Double(round - 1) // Slightly higher scaling
+        
+        let tier = trophyTier(survivorCount: survivorCount, totalStartCount: totalStartCount)
         let trophyMultiplier: Double
-        switch trophyTier {
-        case 3: trophyMultiplier = 3.0  // Perfect - 3 trophies
-        case 2: trophyMultiplier = 2.0  // Good - 2 trophies
-        case 1: trophyMultiplier = 1.5  // Some - 1 trophy
-        default: trophyMultiplier = 1.0 // Used all adjustments
+        switch tier {
+        case 3: trophyMultiplier = 3.0  // Near annihilation - 3 trophies
+        case 2: trophyMultiplier = 2.0  // Very close - 2 trophies
+        case 1: trophyMultiplier = 1.5  // Close enough - 1 trophy
+        default: trophyMultiplier = 0.0 // Blowout - no points
         }
         
         return Int(Double(baseScore) * roundMultiplier * trophyMultiplier)
     }
     
+    /// Legacy methods for compatibility
+    var trophyTier: Int {
+        return 1 // Default - will be overridden by battle result
+    }
+    
+    func calculateScore(adjustmentsRemaining: Int) -> Int {
+        return 50 // Fallback
+    }
+    
     func calculateScore(isUnderdog: Bool) -> Int {
-        // Legacy method - redirect to new calculation
-        return calculateScore(adjustmentsRemaining: adjustmentsRemaining)
+        return 50 // Fallback
     }
     
     func toRecord() -> RunRecord {
