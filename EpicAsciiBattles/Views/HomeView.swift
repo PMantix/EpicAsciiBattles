@@ -12,7 +12,7 @@ struct HomeView: View {
             ASCIIBackgroundView()
                 .ignoresSafeArea()
             
-            VStack(spacing: 40) {
+            VStack(spacing: 20) {
                 Spacer()
                 
                 // Title with ASCII border
@@ -27,7 +27,12 @@ struct HomeView: View {
                 .background(DFColors.dgray.opacity(0.5))
                 .cornerRadius(10)
                 
-                Spacer()
+                // Marathon battle showcase - closer to title, taller
+                MarathonBattleView()
+                    .frame(height: 140)
+                    .padding(.horizontal, 12)
+                
+                Spacer().frame(height: 10)
                 
                 // Main buttons with ASCII styling
                 VStack(spacing: 20) {

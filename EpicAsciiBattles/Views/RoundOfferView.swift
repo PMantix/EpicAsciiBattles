@@ -21,23 +21,36 @@ struct RoundOfferContent: View {
     var gameState: GameState
     
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 0) {
             // Header
-            VStack(spacing: 8) {
+            VStack(spacing: 6) {
                 TilesetTextView(text: "Round \(run.round)", color: DFColors.white, size: 20)
-                TilesetTextView(text: "Score: \(run.score)", color: DFColors.lgray, size: 14)
+                HStack(spacing: 4) {
+                    TilesetTextView(text: "*", color: DFColors.yellow, size: 14)
+                    TilesetTextView(text: "\(run.totalTrophies)", color: DFColors.yellow, size: 14)
+                }
             }
-            .padding(.top, 30)
+            .padding(.top, 20)
             
-            // Instructions
-            TilesetTextView(text: "Balance the fight!", color: DFColors.yellow, size: 16)
+            Spacer()
             
             // Trophy reward indicator
             TrophyIndicator(run: run)
             
+            Spacer()
+            
+            // Adjustments remaining
+            HStack(spacing: 8) {
+                TilesetTextView(text: "Adjustments:", color: DFColors.lgray, size: 12)
+                TilesetTextView(text: "\(run.adjustmentsRemaining)/\(run.maxAdjustments)", 
+                               color: run.adjustmentsRemaining > 0 ? DFColors.lgreen : DFColors.lred, 
+                               size: 14)
+            }
+            .padding(.bottom, 12)
+            
             // Team A with adjustment controls
             TeamBalanceCard(
-                name: run.teamAName,
+                name: run.teamACount == 1 ? run.teamAName : run.teamANamePlural,
                 count: run.teamACount,
                 originalCount: run.originalTeamACount,
                 glyph: run.teamAGlyph,
@@ -47,11 +60,12 @@ struct RoundOfferContent: View {
                 onDecrement: { adjustTeamA(delta: -1) }
             )
             
-            TilesetTextView(text: "VS", color: DFColors.yellow, size: 20)
+            TilesetTextView(text: "VS", color: DFColors.yellow, size: 18)
+                .padding(.vertical, 8)
             
             // Team B with adjustment controls
             TeamBalanceCard(
-                name: run.teamBName,
+                name: run.teamBCount == 1 ? run.teamBName : run.teamBNamePlural,
                 count: run.teamBCount,
                 originalCount: run.originalTeamBCount,
                 glyph: run.teamBGlyph,
@@ -61,15 +75,7 @@ struct RoundOfferContent: View {
                 onDecrement: { adjustTeamB(delta: -1) }
             )
             
-            // Adjustments remaining
-            HStack(spacing: 8) {
-                TilesetTextView(text: "Adjustments:", color: DFColors.lgray, size: 12)
-                TilesetTextView(text: "\(run.adjustmentsRemaining)/\(run.maxAdjustments)", 
-                               color: run.adjustmentsRemaining > 0 ? DFColors.lgreen : DFColors.lred, 
-                               size: 14)
-            }
-            .padding(.top, 10)
-            
+            Spacer()
             Spacer()
             
             // Fight button
@@ -88,17 +94,45 @@ struct RoundOfferContent: View {
     
     func adjustTeamA(delta: Int) {
         let newCount = run.teamACount + delta
-        if newCount >= 1 && newCount <= 40 && run.adjustmentsRemaining > 0 {
+        guard newCount >= 1 && newCount <= 40 else { return }
+        
+        // Check if moving toward or away from original
+        let currentDistance = abs(run.teamACount - run.originalTeamACount)
+        let newDistance = abs(newCount - run.originalTeamACount)
+        
+        if newDistance > currentDistance {
+            // Moving away from original - consume adjustment if available
+            guard run.adjustmentsRemaining > 0 else { return }
             run.teamACount = newCount
             run.adjustmentsUsed += 1
+        } else {
+            // Moving toward original (undo) - free, refund adjustment
+            run.teamACount = newCount
+            if run.adjustmentsUsed > 0 {
+                run.adjustmentsUsed -= 1
+            }
         }
     }
     
     func adjustTeamB(delta: Int) {
         let newCount = run.teamBCount + delta
-        if newCount >= 1 && newCount <= 40 && run.adjustmentsRemaining > 0 {
+        guard newCount >= 1 && newCount <= 40 else { return }
+        
+        // Check if moving toward or away from original
+        let currentDistance = abs(run.teamBCount - run.originalTeamBCount)
+        let newDistance = abs(newCount - run.originalTeamBCount)
+        
+        if newDistance > currentDistance {
+            // Moving away from original - consume adjustment if available
+            guard run.adjustmentsRemaining > 0 else { return }
             run.teamBCount = newCount
             run.adjustmentsUsed += 1
+        } else {
+            // Moving toward original (undo) - free, refund adjustment
+            run.teamBCount = newCount
+            if run.adjustmentsUsed > 0 {
+                run.adjustmentsUsed -= 1
+            }
         }
     }
     
@@ -113,58 +147,67 @@ struct TrophyIndicator: View {
     @ObservedObject var run: GameRun
     @State private var animationOffset: CGFloat = 0
     
-    // Pick a random glyph for the preview
+    // Use team A's glyph and color consistently (the "winning" survivors could be from either team)
     private var previewGlyph: Character {
-        [run.teamAGlyph, run.teamBGlyph].randomElement() ?? "c"
+        run.teamAGlyph
     }
     
     private var previewColor: Color {
-        DFColors.named([run.teamAColorName, run.teamBColorName].randomElement() ?? "white")
+        DFColors.named(run.teamAColorName)
     }
     
     var body: some View {
         VStack(spacing: 10) {
             // Compact header
-            TilesetTextView(text: "Closer = Better!", color: DFColors.yellow, size: 14)
+            TilesetTextView(text: "Remaining Combatants", color: DFColors.lgray, size: 14)
             
-            // Three tiers with animated combatant counts
-            HStack(spacing: 20) {
-                // 3 stars - near annihilation (1-2 survivors from 10)
+            // Four tiers with animated combatant counts (3-star to 0-star)
+            HStack(spacing: 16) {
+                // 3 stars - near annihilation (1 survivor from 10)
                 RewardTierView(
                     stars: 3,
                     survivorCount: 1,
-                    totalCount: 10,
-                    glyph: previewGlyph,
-                    color: previewColor,
-                    points: run.calculateScore(survivorCount: 5, totalStartCount: 100),
+                    glyphA: run.teamAGlyph,
+                    colorA: DFColors.named(run.teamAColorName),
+                    glyphB: run.teamBGlyph,
+                    colorB: DFColors.named(run.teamBColorName),
                     animationOffset: animationOffset
                 )
                 
-                // 2 stars - very close (2-3 survivors from 10)
+                // 2 stars - very close (2 survivors from 10)
                 RewardTierView(
                     stars: 2,
                     survivorCount: 2,
-                    totalCount: 10,
-                    glyph: previewGlyph,
-                    color: previewColor,
-                    points: run.calculateScore(survivorCount: 20, totalStartCount: 100),
+                    glyphA: run.teamAGlyph,
+                    colorA: DFColors.named(run.teamAColorName),
+                    glyphB: run.teamBGlyph,
+                    colorB: DFColors.named(run.teamBColorName),
                     animationOffset: animationOffset
                 )
                 
-                // 1 star - close enough (4-5 survivors from 10)
+                // 1 star - close enough (4 survivors from 10)
                 RewardTierView(
                     stars: 1,
                     survivorCount: 4,
-                    totalCount: 10,
-                    glyph: previewGlyph,
-                    color: previewColor,
-                    points: run.calculateScore(survivorCount: 40, totalStartCount: 100),
+                    glyphA: run.teamAGlyph,
+                    colorA: DFColors.named(run.teamAColorName),
+                    glyphB: run.teamBGlyph,
+                    colorB: DFColors.named(run.teamBColorName),
                     animationOffset: animationOffset
                 )
+                
+                // 0 stars - blowout (6+ survivors)
+                RewardTierView(
+                    stars: 0,
+                    survivorCount: 6,
+                    glyphA: run.teamAGlyph,
+                    colorA: DFColors.named(run.teamAColorName),
+                    glyphB: run.teamBGlyph,
+                    colorB: DFColors.named(run.teamBColorName),
+                    animationOffset: animationOffset,
+                    isBlowout: true
+                )
             }
-            
-            // Blowout warning
-            TilesetTextView(text: "6+ left = BLOWOUT!", color: DFColors.lred, size: 12)
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
@@ -178,42 +221,50 @@ struct TrophyIndicator: View {
     }
 }
 
-// Individual reward tier with animated survivors
+// Individual reward tier with animated survivors - alternates between team A and B glyphs
 struct RewardTierView: View {
     let stars: Int
     let survivorCount: Int
-    let totalCount: Int
-    let glyph: Character
-    let color: Color
-    let points: Int
+    let glyphA: Character
+    let colorA: Color
+    let glyphB: Character
+    let colorB: Color
     let animationOffset: CGFloat
+    var isBlowout: Bool = false
     
     var body: some View {
         VStack(spacing: 4) {
-            // Stars
+            // Stars (or X for blowout)
             HStack(spacing: 1) {
-                ForEach(0..<3, id: \.self) { i in
-                    TilesetTextView(text: "*", 
-                                   color: i < stars ? DFColors.yellow : DFColors.dgray, 
-                                   size: 16)
+                if isBlowout {
+                    TilesetTextView(text: "X", color: DFColors.lred, size: 16)
+                } else {
+                    ForEach(0..<3, id: \.self) { i in
+                        TilesetTextView(text: "*", 
+                                       color: i < stars ? DFColors.yellow : DFColors.dgray, 
+                                       size: 16)
+                    }
                 }
             }
             
-            // Animated survivors in a row
+            // Animated survivors in a row - alternate between team A and B
             HStack(spacing: 2) {
                 ForEach(0..<survivorCount, id: \.self) { i in
+                    // Alternate glyphs for visual interest
+                    let useTeamA = i % 2 == 0
                     AnimatedCombatantView(
-                        glyph: glyph,
-                        color: color,
+                        glyph: useTeamA ? glyphA : glyphB,
+                        color: useTeamA ? colorA : colorB,
                         offset: animationOffset,
                         delay: Double(i) * 0.15
                     )
                 }
+                // Show "+" for blowout to indicate "6 or more"
+                if isBlowout {
+                    TilesetTextView(text: "+", color: DFColors.lred, size: 14)
+                }
             }
             .frame(height: 20)
-            
-            // Points
-            TilesetTextView(text: "+\(points)", color: DFColors.yellow, size: 12)
         }
     }
 }
@@ -274,19 +325,18 @@ struct TeamBalanceCard: View {
                     }
                 }
                 
-                // Count with change indicator
+                // Count and name inline with change indicator
                 HStack(spacing: 4) {
-                    TilesetTextView(text: "x\(count)", color: DFColors.white, size: 18)
+                    TilesetTextView(text: "x\(count)", color: DFColors.white, size: 16)
+                    TilesetTextView(text: name, color: color, size: 16)
                     
                     let delta = count - originalCount
                     if delta != 0 {
-                        TilesetTextView(text: delta > 0 ? "+\(delta)" : "\(delta)", 
+                        TilesetTextView(text: delta > 0 ? "(+\(delta))" : "(\(delta))", 
                                        color: delta > 0 ? DFColors.lgreen : DFColors.lred, 
-                                       size: 14)
+                                       size: 12)
                     }
                 }
-                
-                TilesetTextView(text: name, color: color, size: 14)
             }
             .frame(minWidth: 150)
             

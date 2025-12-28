@@ -55,11 +55,16 @@ struct LeaderboardRow: View {
                 .foregroundColor(rankColor)
                 .frame(width: 50, alignment: .leading)
             
-            // Score
-            Text("\(run.score)")
-                .font(.system(.title3, design: .monospaced, weight: .semibold))
-                .foregroundColor(.yellow)
-                .frame(width: 80, alignment: .trailing)
+            // Trophies
+            HStack(spacing: 2) {
+                Text("*")
+                    .font(.system(.title3, design: .monospaced, weight: .bold))
+                    .foregroundColor(.yellow)
+                Text("\(run.totalTrophies)")
+                    .font(.system(.title3, design: .monospaced, weight: .semibold))
+                    .foregroundColor(.yellow)
+            }
+            .frame(width: 80, alignment: .trailing)
             
             Spacer()
             

@@ -18,8 +18,12 @@ struct RoundResultView: View {
                             TilesetTextView(text: "# WIN! #", color: DFColors.lgreen, size: 24)
                             TilesetTextView(text: "=============", color: DFColors.lgreen, size: 18)
                             
-                            TilesetTextView(text: "+\(run.calculateScore(isUnderdog: false)) points", color: DFColors.yellow, size: 18)
-                                .padding(.top, 10)
+                            // Show trophies earned
+                            HStack(spacing: 4) {
+                                TilesetTextView(text: "*", color: DFColors.yellow, size: 18)
+                                TilesetTextView(text: "Trophies earned!", color: DFColors.yellow, size: 18)
+                            }
+                            .padding(.top, 10)
                         }
                         .padding(30)
                         .background(DFColors.dgray.opacity(0.5))

@@ -25,6 +25,7 @@
 		AF20271FE6840527EE0DB741 /* BattleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC9EB1036B2D523AA65FC64 /* BattleView.swift */; };
 		B1C38DC7AC39013B1C7F3445 /* LeaderboardStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4251AB55D4BD4AA4FFDAF287 /* LeaderboardStore.swift */; };
 		F2314B4113FF850C4207F081 /* RunSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 080399203A06C01F677EF66D /* RunSummaryView.swift */; };
+		FD7F5AC52F015DC300FBA149 /* MarathonBattleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7F5AC42F015DC300FBA149 /* MarathonBattleView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -61,6 +62,7 @@
 		C2CB70DD8554A7D1F83A8A96 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		C6E7891D234E2E2CA76FAD05 /* GameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
 		FC16B1BE9191082D2238ED57 /* EpicAsciiBattlesApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpicAsciiBattlesApp.swift; sourceTree = "<group>"; };
+		FD7F5AC42F015DC300FBA149 /* MarathonBattleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarathonBattleView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -99,6 +101,7 @@
 		73CE3D15A96544FECEDF4EA0 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				FD7F5AC42F015DC300FBA149 /* MarathonBattleView.swift */,
 				BDC9EB1036B2D523AA65FC64 /* BattleView.swift */,
 				C022BE4DE948670391E9E481 /* HomeView.swift */,
 				A2F010FE806DAD8D49EEA141 /* LeaderboardView.swift */,
@@ -122,6 +125,14 @@
 			path = Core;
 			sourceTree = "<group>";
 		};
+		AABB0007RESOURCES00000007 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				AABB0008TILESET000000008 /* curses_800x600.png */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		D1DDBD108CF582F67C074FFE /* Persistence */ = {
 			isa = PBXGroup;
 			children = (
@@ -137,14 +148,6 @@
 				304913137D4BBCD682083037 /* GameModels.swift */,
 			);
 			path = Models;
-			sourceTree = "<group>";
-		};
-		AABB0007RESOURCES00000007 /* Resources */ = {
-			isa = PBXGroup;
-			children = (
-				AABB0008TILESET000000008 /* curses_800x600.png */,
-			);
-			path = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -198,6 +201,17 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		AABB000BRESOURCES0000000B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AABB000AASSETSCAT0000000A /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXShellScriptBuildPhase section */
 		F23AEC7DA80C0E4D9FB957AF /* Build Rust Library */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -238,17 +252,6 @@
 		};
 /* End PBXShellScriptBuildPhase section */
 
-/* Begin PBXResourcesBuildPhase section */
-		AABB000BRESOURCES0000000B /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				AABB000AASSETSCAT0000000A /* Assets.xcassets in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
 		E02AF8B7F83A4757A4ED027F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -258,6 +261,7 @@
 				AABB0001DFCOLORS00000001 /* DFColors.swift in Sources */,
 				AABB0003NAMEGEN000000003 /* NameGenerator.swift in Sources */,
 				AABB0005TILESET000000005 /* TilesetRenderer.swift in Sources */,
+				FD7F5AC52F015DC300FBA149 /* MarathonBattleView.swift in Sources */,
 				AF20271FE6840527EE0DB741 /* BattleView.swift in Sources */,
 				005D5AF71B804887D349FCD4 /* ContentView.swift in Sources */,
 				09498B347DF032FF046057BE /* EpicAsciiBattlesApp.swift in Sources */,

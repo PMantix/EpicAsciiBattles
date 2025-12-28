@@ -24,7 +24,7 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 15) {
                         TilesetTextView(text: "Gore Intensity", color: DFColors.yellow, size: 18)
                         
-                        TilesetTextView(text: "Controls blood, gibs, and VFX intensity", 
+                        TilesetTextView(text: "Blood and VFX intensity", 
                                        color: DFColors.lgray, size: 12)
                             .padding(.bottom, 8)
                         
@@ -52,7 +52,7 @@ struct SettingsView: View {
                                                        size: 16)
                                         TilesetTextView(text: intensity.description, 
                                                        color: DFColors.lgray, 
-                                                       size: 11)
+                                                       size: 10)
                                     }
                                     
                                     Spacer()
@@ -69,21 +69,62 @@ struct SettingsView: View {
                     }
                     .padding(.horizontal)
                     
-                    // Accessibility Settings
+                    // Color Scheme Setting
                     VStack(alignment: .leading, spacing: 15) {
-                        TilesetTextView(text: "Accessibility", color: DFColors.yellow, size: 18)
+                        TilesetTextView(text: "Color Scheme", color: DFColors.yellow, size: 18)
                         
-                        Toggle(isOn: $settings.reducedMotion) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                TilesetTextView(text: "Reduced Motion", color: DFColors.white, size: 16)
-                                TilesetTextView(text: "Shorter particle effects and animations", 
-                                               color: DFColors.lgray, size: 11)
+                        TilesetTextView(text: "Visual theme for the game", 
+                                       color: DFColors.lgray, size: 12)
+                            .padding(.bottom, 8)
+                        
+                        ForEach(ColorScheme.allCases) { scheme in
+                            Button(action: {
+                                settings.colorScheme = scheme
+                            }) {
+                                HStack {
+                                    // Radio button
+                                    ZStack {
+                                        Circle()
+                                            .stroke(DFColors.white, lineWidth: 2)
+                                            .frame(width: 20, height: 20)
+                                        
+                                        if settings.colorScheme == scheme {
+                                            Circle()
+                                                .fill(DFColors.lgreen)
+                                                .frame(width: 12, height: 12)
+                                        }
+                                    }
+                                    
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        TilesetTextView(text: scheme.displayName, 
+                                                       color: settings.colorScheme == scheme ? DFColors.white : DFColors.lgray, 
+                                                       size: 16)
+                                        TilesetTextView(text: scheme.description, 
+                                                       color: DFColors.lgray, 
+                                                       size: 10)
+                                    }
+                                    
+                                    Spacer()
+                                    
+                                    // Color preview swatch
+                                    HStack(spacing: 2) {
+                                        ForEach(scheme.previewColors, id: \.self) { color in
+                                            Rectangle()
+                                                .fill(color)
+                                                .frame(width: 12, height: 20)
+                                        }
+                                    }
+                                    .cornerRadius(4)
+                                }
+                                .padding()
+                                .background(
+                                    settings.colorScheme == scheme 
+                                        ? DFColors.dgray.opacity(0.8) 
+                                        : DFColors.dgray.opacity(0.3)
+                                )
+                                .cornerRadius(8)
                             }
                         }
-                        .toggleStyle(SwitchToggleStyle(tint: DFColors.lgreen))
-                        .padding()
-                        .background(DFColors.dgray.opacity(0.3))
-                        .cornerRadius(8)
                     }
                     .padding(.horizontal)
                     

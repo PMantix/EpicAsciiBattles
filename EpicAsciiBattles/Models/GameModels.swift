@@ -1,11 +1,12 @@
 import Foundation
 import Combine
+import SwiftUI
 
 /// Record of a completed run
 struct RunRecord: Codable, Identifiable {
     let runId: UUID
     let timestamp: Date
-    let score: Int
+    let totalTrophies: Int
     let roundReached: Int
     let seed: UInt64
     
@@ -28,10 +29,68 @@ class GameSettings: ObservableObject {
         }
     }
     
+    @Published var colorScheme: ColorScheme {
+        didSet {
+            UserDefaults.standard.set(colorScheme.rawValue, forKey: "colorScheme")
+        }
+    }
+    
     private init() {
-        let intensityRaw = UserDefaults.standard.string(forKey: "goreIntensity") ?? "normal"
-        self.goreIntensity = GoreIntensity(rawValue: intensityRaw) ?? .normal
+        let intensityRaw = UserDefaults.standard.string(forKey: "goreIntensity") ?? "grotesque"
+        self.goreIntensity = GoreIntensity(rawValue: intensityRaw) ?? .grotesque
         self.reducedMotion = UserDefaults.standard.bool(forKey: "reducedMotion")
+        let schemeRaw = UserDefaults.standard.string(forKey: "colorScheme") ?? "classic"
+        self.colorScheme = ColorScheme(rawValue: schemeRaw) ?? .classic
+    }
+}
+
+/// Color scheme options for the game
+enum ColorScheme: String, CaseIterable, Identifiable {
+    case classic = "classic"
+    case amber = "amber"
+    case green = "green"
+    case ice = "ice"
+    
+    var id: String { rawValue }
+    
+    var displayName: String {
+        switch self {
+        case .classic: return "Classic"
+        case .amber: return "Amber CRT"
+        case .green: return "Green Terminal"
+        case .ice: return "Ice"
+        }
+    }
+    
+    var description: String {
+        switch self {
+        case .classic: return "Full color palette"
+        case .amber: return "Retro amber monitor"
+        case .green: return "Classic terminal green"
+        case .ice: return "Cool blue tones"
+        }
+    }
+    
+    var previewColors: [Color] {
+        switch self {
+        case .classic:
+            return [DFColors.lred, DFColors.yellow, DFColors.lgreen, DFColors.lblue]
+        case .amber:
+            return [Color(red: 1.0, green: 0.6, blue: 0.0), 
+                    Color(red: 1.0, green: 0.8, blue: 0.2),
+                    Color(red: 0.8, green: 0.5, blue: 0.0),
+                    Color(red: 0.5, green: 0.3, blue: 0.0)]
+        case .green:
+            return [Color(red: 0.0, green: 1.0, blue: 0.0),
+                    Color(red: 0.0, green: 0.8, blue: 0.0),
+                    Color(red: 0.0, green: 0.6, blue: 0.0),
+                    Color(red: 0.0, green: 0.4, blue: 0.0)]
+        case .ice:
+            return [Color(red: 0.6, green: 0.9, blue: 1.0),
+                    Color(red: 0.4, green: 0.7, blue: 1.0),
+                    Color(red: 0.2, green: 0.5, blue: 0.9),
+                    Color(red: 0.8, green: 0.95, blue: 1.0)]
+        }
     }
 }
 

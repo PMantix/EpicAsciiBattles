@@ -473,6 +473,14 @@ struct BattleView: View {
             combatLog.append(LogEntry(text: "Survivors: \(totalSurvivors)/\(totalStartCount) (\(survivorPercent)%)", 
                                      color: DFColors.lgray, isCritical: false))
             
+            // Determine winner/loser info for history
+            let winnerGlyph = winner == 0 ? run.teamAGlyph : run.teamBGlyph
+            let winnerColor = winner == 0 ? run.teamAColorName : run.teamBColorName
+            let winnerName = winner == 0 ? run.teamAName : run.teamBName
+            let loserGlyph = winner == 0 ? run.teamBGlyph : run.teamAGlyph
+            let loserColor = winner == 0 ? run.teamBColorName : run.teamAColorName
+            let loserName = winner == 0 ? run.teamBName : run.teamAName
+            
             if isBlowout {
                 combatLog.append(LogEntry(text: "BLOWOUT! Run ends.", color: DFColors.lred, isCritical: true))
             } else {
@@ -482,12 +490,52 @@ struct BattleView: View {
             combatLog.append(LogEntry(text: "═══════════════════════════", color: DFColors.yellow, isCritical: true))
             
             if !isBlowout {
-                let points = run.calculateScore(survivorCount: totalSurvivors, totalStartCount: totalStartCount)
-                run.score += points
-                battleResult = BattleResult(isWin: true, points: points, totalScore: run.score, trophyTier: tier, survivorPercent: survivorPercent)
+                // Record battle in history
+                run.recordBattle(
+                    winnerGlyph: winnerGlyph, winnerColor: winnerColor, winnerName: winnerName,
+                    loserGlyph: loserGlyph, loserColor: loserColor, loserName: loserName,
+                    trophies: tier
+                )
+                
+                battleResult = BattleResult(
+                    isWin: true, 
+                    trophyTier: tier,
+                    totalTrophies: run.totalTrophies,
+                    survivorPercent: survivorPercent,
+                    teamAGlyph: run.teamAGlyph,
+                    teamAColor: run.teamAColorName,
+                    teamASurvivors: teamASurvivors,
+                    teamAStartCount: run.teamACount,
+                    teamBGlyph: run.teamBGlyph,
+                    teamBColor: run.teamBColorName,
+                    teamBSurvivors: teamBSurvivors,
+                    teamBStartCount: run.teamBCount,
+                    winningTeam: winner
+                )
             } else {
                 run.isActive = false
-                battleResult = BattleResult(isWin: false, points: 0, totalScore: run.score, trophyTier: 0, survivorPercent: survivorPercent)
+                // Record the blowout in history with 0 trophies
+                run.recordBattle(
+                    winnerGlyph: winnerGlyph, winnerColor: winnerColor, winnerName: winnerName,
+                    loserGlyph: loserGlyph, loserColor: loserColor, loserName: loserName,
+                    trophies: 0
+                )
+                
+                battleResult = BattleResult(
+                    isWin: false, 
+                    trophyTier: 0,
+                    totalTrophies: run.totalTrophies,
+                    survivorPercent: survivorPercent,
+                    teamAGlyph: run.teamAGlyph,
+                    teamAColor: run.teamAColorName,
+                    teamASurvivors: teamASurvivors,
+                    teamAStartCount: run.teamACount,
+                    teamBGlyph: run.teamBGlyph,
+                    teamBColor: run.teamBColorName,
+                    teamBSurvivors: teamBSurvivors,
+                    teamBStartCount: run.teamBCount,
+                    winningTeam: winner
+                )
             }
             
             // Show result overlay (user taps to continue)
@@ -520,10 +568,19 @@ struct BattleView: View {
 // Battle result data for end overlay
 struct BattleResult {
     let isWin: Bool
-    let points: Int
-    let totalScore: Int
     let trophyTier: Int
+    let totalTrophies: Int
     let survivorPercent: Int
+    // Team display info
+    let teamAGlyph: Character
+    let teamAColor: String
+    let teamASurvivors: Int
+    let teamAStartCount: Int
+    let teamBGlyph: Character
+    let teamBColor: String
+    let teamBSurvivors: Int
+    let teamBStartCount: Int
+    let winningTeam: Int // 0 = A, 1 = B
 }
 
 struct HitBlip: Identifiable {
@@ -734,6 +791,13 @@ struct BattleGridView: View {
         if let tileImage = renderer.getTile(index: index, color: color, scale: scale) {
             let resolved = context.resolve(Image(uiImage: tileImage))
             context.draw(resolved, at: CGPoint(x: point.x + size/2, y: point.y + size/2))
+        } else {
+            // Fallback: draw character using system font if tileset fails
+            let fontSize = size * 0.7
+            let text = Text(String(char))
+                .font(.system(size: fontSize, weight: .bold, design: .monospaced))
+                .foregroundColor(Color(color))
+            context.draw(text, at: CGPoint(x: point.x + size/2, y: point.y + size/2))
         }
     }
     
@@ -805,19 +869,23 @@ struct CombatLogView: View {
     }
 }
 
-// END banner overlay - shows CLOSE BATTLE or BLOWOUT with trophies
+// END banner overlay - shows battle result with team display
 struct EndBannerView: View {
     @EnvironmentObject var gameState: GameState
     let result: BattleResult?
     let onTap: () -> Void
     
+    @State private var hopOffset: CGFloat = 0
+    
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             if let result = result {
+                // Battle result display: Team A vs Team B
+                BattleResultDisplay(result: result, hopOffset: hopOffset)
+                
+                Spacer().frame(height: 8)
+                
                 if result.isWin {
-                    // Close battle - continue!
-                    TilesetTextView(text: "CLOSE BATTLE!", color: DFColors.lgreen, size: 24)
-                    
                     // Trophy display
                     HStack(spacing: 4) {
                         ForEach(0..<3, id: \.self) { i in
@@ -827,23 +895,12 @@ struct EndBannerView: View {
                         }
                     }
                     
-                    // Survivor info
-                    TilesetTextView(text: "\(result.survivorPercent)% survivors", color: DFColors.lgray, size: 14)
-                    
-                    // Points earned
-                    TilesetTextView(text: "+\(result.points) points", color: DFColors.yellow, size: 20)
-                    TilesetTextView(text: "Total: \(result.totalScore)", color: DFColors.white, size: 16)
+                    // Total trophies
+                    TilesetTextView(text: "Total Trophies: \(result.totalTrophies)", color: DFColors.white, size: 16)
                 } else {
-                    // Blowout - run ends
-                    TilesetTextView(text: "BLOWOUT!", color: DFColors.lred, size: 24)
-                    
-                    // Survivor info
-                    TilesetTextView(text: "\(result.survivorPercent)% survivors", color: DFColors.lgray, size: 14)
-                    TilesetTextView(text: "Too one-sided!", color: DFColors.lred, size: 16)
-                    
-                    // Final score
-                    TilesetTextView(text: "Final Score: \(result.totalScore)", color: DFColors.yellow, size: 18)
-                    TilesetTextView(text: "Run Ended", color: DFColors.lgray, size: 14)
+                    // Blowout - show final trophy count
+                    TilesetTextView(text: "Run Over!", color: DFColors.lred, size: 20)
+                    TilesetTextView(text: "Total Trophies: \(result.totalTrophies)", color: DFColors.yellow, size: 16)
                 }
                 
                 // Tap to continue
@@ -851,11 +908,116 @@ struct EndBannerView: View {
                     .padding(.top, 8)
             }
         }
-        .padding(30)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 30)
         .background(DFColors.black.opacity(0.9))
         .cornerRadius(12)
         .onTapGesture {
             onTap()
+        }
+        .onAppear {
+            // Animate winners hopping
+            withAnimation(.easeInOut(duration: 0.3).repeatForever(autoreverses: true)) {
+                hopOffset = -6
+            }
+        }
+    }
+}
+
+// Horizontal battle result display showing both teams
+struct BattleResultDisplay: View {
+    let result: BattleResult
+    let hopOffset: CGFloat
+    
+    var body: some View {
+        HStack(spacing: 8) {
+            // Team A side
+            TeamResultView(
+                glyph: result.teamAGlyph,
+                color: result.teamAColor,
+                survivors: result.teamASurvivors,
+                startCount: result.teamAStartCount,
+                isWinner: result.winningTeam == 0,
+                hopOffset: hopOffset,
+                side: .left
+            )
+            
+            // VS divider
+            TilesetTextView(text: "VS", color: DFColors.dgray, size: 14)
+                .padding(.horizontal, 8)
+            
+            // Team B side
+            TeamResultView(
+                glyph: result.teamBGlyph,
+                color: result.teamBColor,
+                survivors: result.teamBSurvivors,
+                startCount: result.teamBStartCount,
+                isWinner: result.winningTeam == 1,
+                hopOffset: hopOffset,
+                side: .right
+            )
+        }
+    }
+}
+
+// One side of the battle result
+struct TeamResultView: View {
+    let glyph: Character
+    let color: String
+    let survivors: Int
+    let startCount: Int
+    let isWinner: Bool
+    let hopOffset: CGFloat
+    let side: TeamSide
+    
+    enum TeamSide {
+        case left, right
+    }
+    
+    // Gibs and corpse characters for dead combatants
+    private let gibGlyphs: [Character] = [",", ".", ";", "~", "`"]
+    private let corpseGlyph: Character = "%"
+    
+    var body: some View {
+        HStack(spacing: 3) {
+            // Show survivors and dead based on side
+            let deadCount = min(startCount - survivors, 5) // Cap display at 5 dead
+            let aliveCount = min(survivors, 5) // Cap display at 5 alive
+            
+            if side == .left {
+                // Dead first (left side), then alive
+                deadCombatants(count: deadCount)
+                aliveCombatants(count: aliveCount)
+            } else {
+                // Alive first (right side), then dead
+                aliveCombatants(count: aliveCount)
+                deadCombatants(count: deadCount)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    func aliveCombatants(count: Int) -> some View {
+        ForEach(0..<count, id: \.self) { i in
+            TilesetTextView(
+                text: String(glyph), 
+                color: DFColors.named(color), 
+                size: 18
+            )
+            .offset(y: isWinner ? hopOffset : 0)
+        }
+    }
+    
+    @ViewBuilder
+    func deadCombatants(count: Int) -> some View {
+        ForEach(0..<count, id: \.self) { i in
+            // Alternate between corpse and gibs
+            let showGib = i % 2 == 1
+            TilesetTextView(
+                text: String(showGib ? gibGlyphs[i % gibGlyphs.count] : corpseGlyph), 
+                color: DFColors.dgray, 
+                size: showGib ? 14 : 18
+            )
         }
     }
 }

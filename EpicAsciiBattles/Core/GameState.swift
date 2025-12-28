@@ -35,14 +35,19 @@ class GameRun: ObservableObject {
     var startTime: Date
     
     @Published var round: Int = 0
-    @Published var score: Int = 0
+    @Published var totalTrophies: Int = 0  // Total trophies earned this run
     @Published var isActive: Bool = true
     
-    // Current matchup
-    @Published var teamAName: String = ""
+    // Battle history for run summary
+    @Published var battleHistory: [BattleHistoryEntry] = []
+    
+    // Current matchup (singular names for species ID, plural for display)
+    @Published var teamAName: String = ""  // singular (for species ID)
+    @Published var teamANamePlural: String = ""  // plural (for display)
     @Published var teamACount: Int = 0
     @Published var teamAGlyph: Character = " "
-    @Published var teamBName: String = ""
+    @Published var teamBName: String = ""  // singular (for species ID)
+    @Published var teamBNamePlural: String = ""  // plural (for display)
     @Published var teamBCount: Int = 0
     @Published var teamBGlyph: Character = " "
     @Published var teamAColorName: String = "lgreen"
@@ -72,38 +77,38 @@ class GameRun: ObservableObject {
         // Scale battle size with round number
         let roundScale = 1.0 + 0.15 * Double(round - 1) // 15% bigger each round
         
-        // All available species: (name, glyph, base count range, color)
-        let species: [(String, String, ClosedRange<Int>, String)] = [
-            ("Ant", "a", 10...30, "red"),
-            ("Baboon", "b", 1...5, "brown"),
-            ("Bear", "B", 1...3, "brown"),
-            ("Cat", "c", 2...8, "gray"),
-            ("Chicken", "c", 2...10, "yellow"),
-            ("Chimpanzee", "C", 1...4, "brown"),
-            ("Cockroach", "i", 10...25, "brown"),
-            ("Dog", "o", 2...7, "brown"),
-            ("Donkey", "d", 1...4, "gray"),
-            ("Dragon", "D", 1...2, "lred"),
-            ("Duck", "u", 3...12, "yellow"),
-            ("Flamingo", "f", 2...8, "lpink"),
-            ("Gecko", "e", 5...15, "lgreen"),
-            ("Gerbil", "g", 6...18, "brown"),
-            ("Goose", "G", 2...9, "white"),
-            ("Horse", "H", 1...4, "brown"),
-            ("Alligator", "A", 1...3, "green"),
-            ("Lion", "L", 1...3, "yellow"),
-            ("Mouse", "m", 8...25, "gray"),
-            ("Rat", "r", 6...20, "gray"),
-            ("Salamander", "l", 4...12, "orange"),
-            ("Snake", "s", 2...8, "green"),
-            ("Spider", "m", 5...15, "lgray"),
-            ("Tiger", "T", 1...3, "orange"),
-            ("Turtle", "t", 2...6, "green"),
-            ("Wolf", "w", 2...6, "gray"),
-            ("Demon", "&", 1...2, "lred"),
-            ("Lava Beast", "@", 1...2, "orange"),
-            ("Rock Monster", "R", 1...2, "gray"),
-            ("Space Void", "V", 1...3, "purple")
+        // All available species: (singular, plural, glyph, base count range, color)
+        let species: [(String, String, String, ClosedRange<Int>, String)] = [
+            ("Ant", "Ants", "a", 10...30, "red"),
+            ("Baboon", "Baboons", "b", 1...5, "brown"),
+            ("Bear", "Bears", "B", 1...3, "brown"),
+            ("Cat", "Cats", "c", 2...8, "gray"),
+            ("Chicken", "Chickens", "c", 2...10, "yellow"),
+            ("Chimpanzee", "Chimpanzees", "C", 1...4, "brown"),
+            ("Cockroach", "Cockroaches", "i", 10...25, "brown"),
+            ("Dog", "Dogs", "o", 2...7, "brown"),
+            ("Donkey", "Donkeys", "d", 1...4, "gray"),
+            ("Dragon", "Dragons", "D", 1...2, "lred"),
+            ("Duck", "Ducks", "u", 3...12, "yellow"),
+            ("Flamingo", "Flamingos", "f", 2...8, "lpink"),
+            ("Gecko", "Geckos", "e", 5...15, "lgreen"),
+            ("Gerbil", "Gerbils", "g", 6...18, "brown"),
+            ("Goose", "Geese", "G", 2...9, "white"),
+            ("Horse", "Horses", "H", 1...4, "brown"),
+            ("Alligator", "Alligators", "A", 1...3, "green"),
+            ("Lion", "Lions", "L", 1...3, "yellow"),
+            ("Mouse", "Mice", "m", 8...25, "gray"),
+            ("Rat", "Rats", "r", 6...20, "gray"),
+            ("Salamander", "Salamanders", "l", 4...12, "orange"),
+            ("Snake", "Snakes", "s", 2...8, "green"),
+            ("Spider", "Spiders", "m", 5...15, "lgray"),
+            ("Tiger", "Tigers", "T", 1...3, "orange"),
+            ("Turtle", "Turtles", "t", 2...6, "green"),
+            ("Wolf", "Wolves", "w", 2...6, "gray"),
+            ("Demon", "Demons", "&", 1...2, "lred"),
+            ("Lava Beast", "Lava Beasts", "@", 1...2, "orange"),
+            ("Rock Monster", "Rock Monsters", "R", 1...2, "gray"),
+            ("Space Void", "Space Voids", "V", 1...3, "purple")
         ]
         
         // Pick two different species
@@ -116,19 +121,21 @@ class GameRun: ObservableObject {
         let teamA = species[teamAIndex]
         let teamB = species[teamBIndex]
         
-        teamAName = teamA.0
-        teamAGlyph = Character(teamA.1)
+        teamAName = teamA.0  // singular
+        teamANamePlural = teamA.1  // plural
+        teamAGlyph = Character(teamA.2)
         // Scale count with round, capped at reasonable max
-        let baseCountA = Int.random(in: teamA.2)
+        let baseCountA = Int.random(in: teamA.3)
         teamACount = min(40, max(1, Int(Double(baseCountA) * roundScale)))
-        teamAColorName = teamA.3
+        teamAColorName = teamA.4
         originalTeamACount = teamACount
         
-        teamBName = teamB.0
-        teamBGlyph = Character(teamB.1)
-        let baseCountB = Int.random(in: teamB.2)
+        teamBName = teamB.0  // singular
+        teamBNamePlural = teamB.1  // plural
+        teamBGlyph = Character(teamB.2)
+        let baseCountB = Int.random(in: teamB.3)
         teamBCount = min(40, max(1, Int(Double(baseCountB) * roundScale)))
-        teamBColorName = teamB.3
+        teamBColorName = teamB.4
         originalTeamBCount = teamBCount
         
         // Reset adjustments for new round
@@ -204,12 +211,12 @@ class GameRun: ObservableObject {
         }
     }
     
-    /// Maximum adjustments allowed based on total score (progression unlock)
+    /// Maximum adjustments allowed based on total trophies (progression unlock)
     var maxAdjustments: Int {
-        if score >= 2000 { return 6 }
-        if score >= 1000 { return 5 }
-        if score >= 500 { return 4 }
-        if score >= 200 { return 3 }
+        if totalTrophies >= 30 { return 6 }
+        if totalTrophies >= 20 { return 5 }
+        if totalTrophies >= 12 { return 4 }
+        if totalTrophies >= 6 { return 3 }
         return 2
     }
     
@@ -254,43 +261,44 @@ class GameRun: ObservableObject {
         return 0 // Blowout
     }
     
-    /// Calculate score based on closeness (survivors ratio)
-    func calculateScore(survivorCount: Int, totalStartCount: Int) -> Int {
-        let baseScore = 50
-        let roundMultiplier = 1.0 + 0.15 * Double(round - 1) // Slightly higher scaling
-        
-        let tier = trophyTier(survivorCount: survivorCount, totalStartCount: totalStartCount)
-        let trophyMultiplier: Double
-        switch tier {
-        case 3: trophyMultiplier = 3.0  // Near annihilation - 3 trophies
-        case 2: trophyMultiplier = 2.0  // Very close - 2 trophies
-        case 1: trophyMultiplier = 1.5  // Close enough - 1 trophy
-        default: trophyMultiplier = 0.0 // Blowout - no points
-        }
-        
-        return Int(Double(baseScore) * roundMultiplier * trophyMultiplier)
-    }
-    
-    /// Legacy methods for compatibility
-    var trophyTier: Int {
-        return 1 // Default - will be overridden by battle result
-    }
-    
-    func calculateScore(adjustmentsRemaining: Int) -> Int {
-        return 50 // Fallback
-    }
-    
-    func calculateScore(isUnderdog: Bool) -> Int {
-        return 50 // Fallback
+    /// Record a completed battle in history
+    func recordBattle(winnerGlyph: Character, winnerColor: String, winnerName: String,
+                      loserGlyph: Character, loserColor: String, loserName: String,
+                      trophies: Int) {
+        let entry = BattleHistoryEntry(
+            round: round,
+            winnerGlyph: winnerGlyph,
+            winnerColor: winnerColor,
+            winnerName: winnerName,
+            loserGlyph: loserGlyph,
+            loserColor: loserColor,
+            loserName: loserName,
+            trophies: trophies
+        )
+        battleHistory.append(entry)
+        totalTrophies += trophies
     }
     
     func toRecord() -> RunRecord {
         RunRecord(
             runId: runId,
             timestamp: startTime,
-            score: score,
+            totalTrophies: totalTrophies,
             roundReached: round,
             seed: seed
         )
     }
+}
+
+/// A single battle result for history display
+struct BattleHistoryEntry: Identifiable {
+    let id = UUID()
+    let round: Int
+    let winnerGlyph: Character
+    let winnerColor: String
+    let winnerName: String
+    let loserGlyph: Character
+    let loserColor: String
+    let loserName: String
+    let trophies: Int
 }

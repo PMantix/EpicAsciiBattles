@@ -12,7 +12,7 @@ class LeaderboardStore: ObservableObject {
     
     func addRun(_ run: RunRecord) {
         runs.append(run)
-        runs.sort { $0.score > $1.score }
+        runs.sort { $0.totalTrophies > $1.totalTrophies }
         
         if runs.count > maxRuns {
             runs = Array(runs.prefix(maxRuns))
