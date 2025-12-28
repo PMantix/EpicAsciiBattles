@@ -1,0 +1,83 @@
+id: "demon"
+name: "Demon"
+glyph: "&"
+color: "red"
+
+base_stats:
+  mass_kg: 300.0
+  speed: 6
+  stamina: 180
+  pain_tolerance: 90
+  base_morale: 100
+  aggression: 95
+
+parts:
+  - part_id: "torso"
+    display_name: "Torso"
+    count: 1
+    attachments: []
+    tags: ["torso", "vital", "demonic"]
+    hp: 70
+    armor: 8
+    bleed_rate: 3
+    hit_weight: 14
+  
+  - part_id: "head"
+    display_name: "Head"
+    count: 1
+    attachments: ["torso"]
+    tags: ["head", "brain", "vital"]
+    hp: 35
+    armor: 6
+    bleed_rate: 5
+    hit_weight: 5
+  
+  - part_id: "horn"
+    display_name: "Horn"
+    count: 2
+    attachments: ["head"]
+    tags: ["gore_weapon", "sharp"]
+    hp: 25
+    armor: 10
+    bleed_rate: 0
+    hit_weight: 4
+  
+  - part_id: "jaw"
+    display_name: "Jaw"
+    count: 1
+    attachments: ["head"]
+    tags: ["bite_weapon", "sharp", "crushing"]
+    hp: 30
+    armor: 4
+    bleed_rate: 2
+    hit_weight: 4
+  
+  - part_id: "wing"
+    display_name: "Wing"
+    count: 2
+    attachments: ["torso"]
+    tags: ["wing", "flight"]
+    hp: 30
+    armor: 4
+    bleed_rate: 2
+    hit_weight: 4
+  
+  - part_id: "leg"
+    display_name: "Leg"
+    count: 2
+    attachments: ["torso"]
+    tags: ["leg", "locomotion", "claw_weapon"]
+    hp: 28
+    armor: 6
+    bleed_rate: 3
+    hit_weight: 5
+  
+  - part_id: "tail"
+    display_name: "Tail"
+    count: 1
+    attachments: ["torso"]
+    tags: ["tail", "balance", "bash_weapon"]
+    hp: 20
+    armor: 6
+    bleed_rate: 2
+    hit_weight: 4

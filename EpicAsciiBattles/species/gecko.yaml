@@ -1,0 +1,63 @@
+id: "gecko"
+name: "Gecko"
+glyph: "e"
+color: "green"
+
+base_stats:
+  mass_kg: 0.05
+  speed: 8
+  stamina: 40
+  pain_tolerance: 40
+  base_morale: 55
+  aggression: 35
+
+parts:
+  - part_id: "torso"
+    display_name: "Torso"
+    count: 1
+    attachments: []
+    tags: ["torso", "vital"]
+    hp: 12
+    armor: 1
+    bleed_rate: 2
+    hit_weight: 7
+  
+  - part_id: "head"
+    display_name: "Head"
+    count: 1
+    attachments: ["torso"]
+    tags: ["head", "brain", "vital"]
+    hp: 5
+    armor: 0
+    bleed_rate: 3
+    hit_weight: 2
+  
+  - part_id: "jaw"
+    display_name: "Jaw"
+    count: 1
+    attachments: ["head"]
+    tags: ["bite_weapon"]
+    hp: 4
+    armor: 0
+    bleed_rate: 0
+    hit_weight: 1
+  
+  - part_id: "leg"
+    display_name: "Leg"
+    count: 4
+    attachments: ["torso"]
+    tags: ["leg", "locomotion"]
+    hp: 3
+    armor: 0
+    bleed_rate: 1
+    hit_weight: 2
+  
+  - part_id: "tail"
+    display_name: "Tail"
+    count: 1
+    attachments: ["torso"]
+    tags: ["tail", "balance"]
+    hp: 4
+    armor: 0
+    bleed_rate: 0
+    hit_weight: 1

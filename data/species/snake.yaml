@@ -1,0 +1,53 @@
+id: "snake"
+name: "Snake"
+glyph: "s"
+color: "green"
+
+base_stats:
+  mass_kg: 2.0
+  speed: 6
+  stamina: 70
+  pain_tolerance: 55
+  base_morale: 75
+  aggression: 65
+
+parts:
+  - part_id: "head"
+    display_name: "Head"
+    count: 1
+    attachments: []
+    tags: ["head", "brain", "vital"]
+    hp: 15
+    armor: 2
+    bleed_rate: 5
+    hit_weight: 4
+  
+  - part_id: "jaw"
+    display_name: "Jaw"
+    count: 1
+    attachments: ["head"]
+    tags: ["bite_weapon", "sharp", "venom"]
+    hp: 12
+    armor: 1
+    bleed_rate: 1
+    hit_weight: 3
+  
+  - part_id: "body"
+    display_name: "Body"
+    count: 1
+    attachments: ["head"]
+    tags: ["torso", "vital"]
+    hp: 35
+    armor: 3
+    bleed_rate: 2
+    hit_weight: 10
+  
+  - part_id: "tail"
+    display_name: "Tail"
+    count: 1
+    attachments: ["body"]
+    tags: ["tail", "locomotion"]
+    hp: 12
+    armor: 2
+    bleed_rate: 1
+    hit_weight: 3

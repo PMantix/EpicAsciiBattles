@@ -161,17 +161,16 @@ impl Battle {
     
     /// Create an actor from a species definition
     fn create_actor_from_species(&self, id: u32, species: &Species, team: u8, x: i32, y: i32) -> Actor {
-        let mut actor = Actor::new(id, species.id.clone(), species.glyph, team, x, y);
+        let mut actor = Actor::new(id, species.id.clone(), species.glyph, species.color.clone(), team, x, y);
         
         // Copy base stats
-        actor.max_hp = (species.base_stats.mass_kg * 10.0) as i32;
-        actor.hp = actor.max_hp;
         actor.speed = species.base_stats.speed;
         actor.max_stamina = species.base_stats.stamina;
         actor.stamina = actor.max_stamina;
         actor.morale = species.base_stats.base_morale;
         
         // Clone all parts from species definition
+        let mut total_hp = 0;
         for part_def in &species.parts {
             for i in 0..part_def.count {
                 let part_instance_id = if part_def.count > 1 {
@@ -193,9 +192,14 @@ impl Battle {
                     hit_weight: part_def.hit_weight,
                 };
                 
+                total_hp += part_def.hp;
                 actor.parts.push(part);
             }
         }
+        
+        // Set actor HP to sum of all part HP
+        actor.max_hp = total_hp.max(1); // Ensure at least 1 HP
+        actor.hp = actor.max_hp;
         
         actor
     }
@@ -242,6 +246,7 @@ impl Battle {
                 idx as u32,
                 data.species_id.clone(),
                 data.glyph,
+                "white".to_string(),
                 0, // team 0
                 5,
                 y,
@@ -256,6 +261,7 @@ impl Battle {
                 (idx + team_a_data.len()) as u32,
                 data.species_id.clone(),
                 data.glyph,
+                "white".to_string(),
                 1, // team 1
                 self.grid.width() - 5,
                 y,

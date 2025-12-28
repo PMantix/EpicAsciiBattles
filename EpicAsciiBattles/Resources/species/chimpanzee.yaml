@@ -1,0 +1,63 @@
+id: "chimpanzee"
+name: "Chimpanzee"
+glyph: "C"
+color: "brown"
+
+base_stats:
+  mass_kg: 55.0
+  speed: 6
+  stamina: 90
+  pain_tolerance: 65
+  base_morale: 75
+  aggression: 65
+
+parts:
+  - part_id: "torso"
+    display_name: "Torso"
+    count: 1
+    attachments: []
+    tags: ["torso", "vital"]
+    hp: 40
+    armor: 2
+    bleed_rate: 4
+    hit_weight: 10
+  
+  - part_id: "head"
+    display_name: "Head"
+    count: 1
+    attachments: ["torso"]
+    tags: ["head", "brain", "vital"]
+    hp: 20
+    armor: 1
+    bleed_rate: 5
+    hit_weight: 4
+  
+  - part_id: "jaw"
+    display_name: "Jaw"
+    count: 1
+    attachments: ["head"]
+    tags: ["bite_weapon", "sharp"]
+    hp: 16
+    armor: 1
+    bleed_rate: 1
+    hit_weight: 3
+  
+  - part_id: "arm"
+    display_name: "Arm"
+    count: 2
+    attachments: ["torso"]
+    tags: ["grasp", "bash_weapon"]
+    hp: 18
+    armor: 1
+    bleed_rate: 2
+    hit_weight: 5
+  
+  - part_id: "leg"
+    display_name: "Leg"
+    count: 2
+    attachments: ["torso"]
+    tags: ["leg", "locomotion"]
+    hp: 16
+    armor: 1
+    bleed_rate: 2
+    hit_weight: 4

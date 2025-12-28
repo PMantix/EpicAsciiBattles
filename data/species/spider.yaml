@@ -1,0 +1,53 @@
+id: "spider"
+name: "Spider"
+glyph: "x"
+color: "brown"
+
+base_stats:
+  mass_kg: 0.01
+  speed: 7
+  stamina: 45
+  pain_tolerance: 45
+  base_morale: 65
+  aggression: 70
+
+parts:
+  - part_id: "head"
+    display_name: "Head"
+    count: 1
+    attachments: []
+    tags: ["head", "brain", "vital"]
+    hp: 8
+    armor: 1
+    bleed_rate: 3
+    hit_weight: 3
+  
+  - part_id: "body"
+    display_name: "Body"
+    count: 1
+    attachments: ["head"]
+    tags: ["torso", "vital"]
+    hp: 15
+    armor: 2
+    bleed_rate: 2
+    hit_weight: 7
+  
+  - part_id: "fang"
+    display_name: "Fang"
+    count: 2
+    attachments: ["head"]
+    tags: ["bite_weapon", "venom", "sharp"]
+    hp: 6
+    armor: 1
+    bleed_rate: 0
+    hit_weight: 2
+  
+  - part_id: "leg"
+    display_name: "Leg"
+    count: 8
+    attachments: ["body"]
+    tags: ["leg", "locomotion"]
+    hp: 5
+    armor: 1
+    bleed_rate: 1
+    hit_weight: 2

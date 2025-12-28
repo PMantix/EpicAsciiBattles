@@ -7,6 +7,7 @@ pub struct Actor {
     pub id: u32,
     pub species_id: String,
     pub glyph: char,
+    pub color: String,
     pub team: u8,
     pub x: i32,
     pub y: i32,
@@ -22,11 +23,12 @@ pub struct Actor {
 }
 
 impl Actor {
-    pub fn new(id: u32, species_id: String, glyph: char, team: u8, x: i32, y: i32) -> Self {
+    pub fn new(id: u32, species_id: String, glyph: char, color: String, team: u8, x: i32, y: i32) -> Self {
         Self {
             id,
             species_id,
             glyph,
+            color,
             team,
             x,
             y,

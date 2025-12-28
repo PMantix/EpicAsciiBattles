@@ -297,6 +297,7 @@ struct ActorInfo: Codable {
     let id: UInt32
     let speciesId: String
     let glyph: Character
+    let color: String
     let team: UInt8
     let x: Int32
     let y: Int32
@@ -308,6 +309,7 @@ struct ActorInfo: Codable {
         case id
         case speciesId = "species_id"
         case glyph
+        case color
         case team
         case x
         case y
@@ -322,6 +324,7 @@ struct ActorInfo: Codable {
         speciesId = try container.decode(String.self, forKey: .speciesId)
         let glyphStr = try container.decode(String.self, forKey: .glyph)
         glyph = glyphStr.first ?? " "
+        color = try container.decode(String.self, forKey: .color)
         team = try container.decode(UInt8.self, forKey: .team)
         x = try container.decode(Int32.self, forKey: .x)
         y = try container.decode(Int32.self, forKey: .y)
@@ -335,6 +338,7 @@ struct ActorInfo: Codable {
         try container.encode(id, forKey: .id)
         try container.encode(speciesId, forKey: .speciesId)
         try container.encode(String(glyph), forKey: .glyph)
+        try container.encode(color, forKey: .color)
         try container.encode(team, forKey: .team)
         try container.encode(x, forKey: .x)
         try container.encode(y, forKey: .y)

@@ -30,8 +30,8 @@ struct DFColors {
         case "green": return green
         case "cyan": return cyan
         case "red": return red
-        case "magenta": return magenta
-        case "brown": return brown
+        case "magenta", "pink": return magenta
+        case "brown", "gray", "grey": return brown
         case "lgray", "lightgray", "light_gray": return lgray
         case "dgray", "darkgray", "dark_gray": return dgray
         case "lblue", "lightblue", "light_blue": return lblue
@@ -43,6 +43,11 @@ struct DFColors {
         case "white": return white
         default: return white
         }
+    }
+    
+    /// Get UIColor by name (for tileset rendering)
+    static func uiNamed(_ name: String) -> UIColor {
+        return UIColor(named(name))
     }
     
     /// Team A default color (greenish)

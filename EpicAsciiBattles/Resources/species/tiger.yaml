@@ -1,0 +1,63 @@
+id: "tiger"
+name: "Tiger"
+glyph: "T"
+color: "yellow"
+
+base_stats:
+  mass_kg: 180.0
+  speed: 8
+  stamina: 105
+  pain_tolerance: 82
+  base_morale: 92
+  aggression: 88
+
+parts:
+  - part_id: "torso"
+    display_name: "Torso"
+    count: 1
+    attachments: []
+    tags: ["torso", "vital"]
+    hp: 62
+    armor: 4
+    bleed_rate: 4
+    hit_weight: 12
+  
+  - part_id: "head"
+    display_name: "Head"
+    count: 1
+    attachments: ["torso"]
+    tags: ["head", "brain", "vital"]
+    hp: 32
+    armor: 3
+    bleed_rate: 6
+    hit_weight: 5
+  
+  - part_id: "jaw"
+    display_name: "Jaw"
+    count: 1
+    attachments: ["head"]
+    tags: ["bite_weapon", "sharp", "crushing"]
+    hp: 28
+    armor: 2
+    bleed_rate: 2
+    hit_weight: 4
+  
+  - part_id: "leg"
+    display_name: "Leg"
+    count: 4
+    attachments: ["torso"]
+    tags: ["leg", "locomotion", "claw_weapon"]
+    hp: 26
+    armor: 2
+    bleed_rate: 3
+    hit_weight: 5
+  
+  - part_id: "tail"
+    display_name: "Tail"
+    count: 1
+    attachments: ["torso"]
+    tags: ["tail", "balance"]
+    hp: 14
+    armor: 1
+    bleed_rate: 1
+    hit_weight: 2

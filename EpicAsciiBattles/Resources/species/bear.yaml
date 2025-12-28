@@ -1,0 +1,63 @@
+id: "bear"
+name: "Bear"
+glyph: "B"
+color: "brown"
+
+base_stats:
+  mass_kg: 250.0
+  speed: 5
+  stamina: 130
+  pain_tolerance: 85
+  base_morale: 90
+  aggression: 75
+
+parts:
+  - part_id: "torso"
+    display_name: "Torso"
+    count: 1
+    attachments: []
+    tags: ["torso", "vital"]
+    hp: 75
+    armor: 6
+    bleed_rate: 4
+    hit_weight: 14
+  
+  - part_id: "head"
+    display_name: "Head"
+    count: 1
+    attachments: ["torso"]
+    tags: ["head", "brain", "vital"]
+    hp: 40
+    armor: 4
+    bleed_rate: 6
+    hit_weight: 6
+  
+  - part_id: "jaw"
+    display_name: "Jaw"
+    count: 1
+    attachments: ["head"]
+    tags: ["bite_weapon", "sharp", "crushing"]
+    hp: 35
+    armor: 3
+    bleed_rate: 2
+    hit_weight: 5
+  
+  - part_id: "arm"
+    display_name: "Arm"
+    count: 2
+    attachments: ["torso"]
+    tags: ["grasp", "claw_weapon"]
+    hp: 32
+    armor: 4
+    bleed_rate: 3
+    hit_weight: 5
+  
+  - part_id: "leg"
+    display_name: "Leg"
+    count: 2
+    attachments: ["torso"]
+    tags: ["leg", "locomotion"]
+    hp: 30
+    armor: 4
+    bleed_rate: 3
+    hit_weight: 5

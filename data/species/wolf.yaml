@@ -1,0 +1,63 @@
+id: "wolf"
+name: "Wolf"
+glyph: "w"
+color: "gray"
+
+base_stats:
+  mass_kg: 40.0
+  speed: 8
+  stamina: 95
+  pain_tolerance: 70
+  base_morale: 85
+  aggression: 80
+
+parts:
+  - part_id: "torso"
+    display_name: "Torso"
+    count: 1
+    attachments: []
+    tags: ["torso", "vital"]
+    hp: 42
+    armor: 2
+    bleed_rate: 3
+    hit_weight: 10
+  
+  - part_id: "head"
+    display_name: "Head"
+    count: 1
+    attachments: ["torso"]
+    tags: ["head", "brain", "vital"]
+    hp: 22
+    armor: 2
+    bleed_rate: 5
+    hit_weight: 4
+  
+  - part_id: "jaw"
+    display_name: "Jaw"
+    count: 1
+    attachments: ["head"]
+    tags: ["bite_weapon", "sharp"]
+    hp: 20
+    armor: 1
+    bleed_rate: 1
+    hit_weight: 4
+  
+  - part_id: "leg"
+    display_name: "Leg"
+    count: 4
+    attachments: ["torso"]
+    tags: ["leg", "locomotion"]
+    hp: 16
+    armor: 1
+    bleed_rate: 2
+    hit_weight: 4
+  
+  - part_id: "tail"
+    display_name: "Tail"
+    count: 1
+    attachments: ["torso"]
+    tags: ["tail", "balance"]
+    hp: 10
+    armor: 1
+    bleed_rate: 1
+    hit_weight: 2

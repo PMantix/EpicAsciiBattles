@@ -14,19 +14,11 @@ struct RoundResultView: View {
                     // Result indicator with ASCII art
                     if run.wasCorrect {
                         VStack(spacing: 20) {
-                            Text("╔═══════════╗")
-                                .font(.system(.title, design: .monospaced))
-                                .foregroundColor(DFColors.lgreen)
-                            Text("║  ✓  WIN!  ║")
-                                .font(.system(.largeTitle, design: .monospaced, weight: .bold))
-                                .foregroundColor(DFColors.lgreen)
-                            Text("╚═══════════╝")
-                                .font(.system(.title, design: .monospaced))
-                                .foregroundColor(DFColors.lgreen)
+                            TilesetTextView(text: "=============", color: DFColors.lgreen, size: 18)
+                            TilesetTextView(text: "# WIN! #", color: DFColors.lgreen, size: 24)
+                            TilesetTextView(text: "=============", color: DFColors.lgreen, size: 18)
                             
-                            Text("+\(run.calculateScore(isUnderdog: false)) points")
-                                .font(.system(.title, design: .monospaced, weight: .bold))
-                                .foregroundColor(DFColors.yellow)
+                            TilesetTextView(text: "+\(run.calculateScore(isUnderdog: false)) points", color: DFColors.yellow, size: 18)
                                 .padding(.top, 10)
                         }
                         .padding(30)
@@ -34,19 +26,11 @@ struct RoundResultView: View {
                         .cornerRadius(15)
                     } else {
                         VStack(spacing: 20) {
-                            Text("╔═══════════╗")
-                                .font(.system(.title, design: .monospaced))
-                                .foregroundColor(DFColors.lred)
-                            Text("║  ✗ LOSS  ║")
-                                .font(.system(.largeTitle, design: .monospaced, weight: .bold))
-                                .foregroundColor(DFColors.lred)
-                            Text("╚═══════════╝")
-                                .font(.system(.title, design: .monospaced))
-                                .foregroundColor(DFColors.lred)
+                            TilesetTextView(text: "=============", color: DFColors.lred, size: 18)
+                            TilesetTextView(text: "# LOSS #", color: DFColors.lred, size: 24)
+                            TilesetTextView(text: "=============", color: DFColors.lred, size: 18)
                             
-                            Text("Run Ended")
-                                .font(.system(.title2, design: .monospaced))
-                                .foregroundColor(DFColors.lgray)
+                            TilesetTextView(text: "Run Ended", color: DFColors.lgray, size: 16)
                                 .padding(.top, 10)
                         }
                         .padding(30)
@@ -71,16 +55,13 @@ struct RoundResultView: View {
                             // Navigate back to round offer (remove both result and battle views)
                             gameState.navigationPath.removeLast(2)
                         }) {
-                            HStack {
-                                Text("▶")
-                                    .font(.system(.title2, design: .monospaced))
-                                Text("Next Round")
-                                    .font(.system(.title2, design: .monospaced, weight: .semibold))
+                            HStack(spacing: 8) {
+                                TilesetTextView(text: ">", color: DFColors.black, size: 18)
+                                TilesetTextView(text: "Next Round", color: DFColors.black, size: 18)
                             }
                             .frame(maxWidth: 300)
                             .padding()
                             .background(DFColors.lgreen)
-                            .foregroundColor(DFColors.black)
                             .cornerRadius(10)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10)
@@ -91,11 +72,9 @@ struct RoundResultView: View {
                         Button(action: {
                             gameState.navigationPath.append(NavigationDestination.runSummary)
                         }) {
-                            HStack {
-                                Text("☆")
-                                    .font(.system(.title2, design: .monospaced))
-                                Text("View Summary")
-                                    .font(.system(.title2, design: .monospaced, weight: .semibold))
+                            HStack(spacing: 8) {
+                                TilesetTextView(text: "*", color: DFColors.black, size: 18)
+                                TilesetTextView(text: "View Summary", color: DFColors.black, size: 18)
                             }
                             .frame(maxWidth: 300)
                             .padding()

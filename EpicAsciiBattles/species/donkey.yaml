@@ -1,0 +1,63 @@
+id: "donkey"
+name: "Donkey"
+glyph: "d"
+color: "gray"
+
+base_stats:
+  mass_kg: 180.0
+  speed: 5
+  stamina: 85
+  pain_tolerance: 75
+  base_morale: 85
+  aggression: 45
+
+parts:
+  - part_id: "torso"
+    display_name: "Torso"
+    count: 1
+    attachments: []
+    tags: ["torso", "vital"]
+    hp: 45
+    armor: 3
+    bleed_rate: 4
+    hit_weight: 14
+  
+  - part_id: "head"
+    display_name: "Head"
+    count: 1
+    attachments: ["torso"]
+    tags: ["head", "brain", "vital"]
+    hp: 20
+    armor: 1
+    bleed_rate: 5
+    hit_weight: 5
+  
+  - part_id: "neck"
+    display_name: "Neck"
+    count: 1
+    attachments: ["head", "torso"]
+    tags: ["neck"]
+    hp: 15
+    armor: 1
+    bleed_rate: 6
+    hit_weight: 4
+  
+  - part_id: "leg"
+    display_name: "Leg"
+    count: 4
+    attachments: ["torso"]
+    tags: ["leg", "stance", "kick_weapon"]
+    hp: 18
+    armor: 1
+    bleed_rate: 3
+    hit_weight: 6
+  
+  - part_id: "tail"
+    display_name: "Tail"
+    count: 1
+    attachments: ["torso"]
+    tags: ["tail", "balance"]
+    hp: 8
+    armor: 0
+    bleed_rate: 1
+    hit_weight: 2

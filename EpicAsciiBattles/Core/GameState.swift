@@ -62,15 +62,46 @@ class GameRun: ObservableObject {
     func generateNextMatchup() {
         round += 1
         
-        // Simple matchup generation for now
-        // Will be enhanced with actual species data in Phase 2
+        // All available species
         let species = [
+            ("Ant", "a", 10...30),
+            ("Baboon", "b", 1...5),
+            ("Bear", "B", 1...3),
+            ("Cat", "c", 2...8),
             ("Chicken", "c", 2...10),
-            ("Baboon", "b", 1...5)
+            ("Chimpanzee", "C", 1...4),
+            ("Cockroach", "i", 10...25),
+            ("Dog", "o", 2...7),
+            ("Donkey", "d", 1...4),
+            ("Dragon", "D", 1...2),
+            ("Duck", "u", 3...12),
+            ("Flamingo", "f", 2...8),
+            ("Gecko", "e", 5...15),
+            ("Gerbil", "G", 6...18),
+            ("Goose", "g", 2...9),
+            ("Horse", "h", 1...4),
+            ("Alligator", "A", 1...3),
+            ("Lion", "L", 1...3),
+            ("Mouse", "m", 8...25),
+            ("Rat", "r", 6...20),
+            ("Salamander", "l", 4...12),
+            ("Snake", "s", 2...8),
+            ("Spider", "x", 5...15),
+            ("Tiger", "T", 1...3),
+            ("Turtle", "t", 2...6),
+            ("Wolf", "w", 2...6),
+            ("Demon", "&", 1...2),
+            ("Lava Beast", "@", 1...2),
+            ("Rock Monster", "R", 1...2),
+            ("Space Void", "V", 1...3)
         ]
         
+        // Pick two different species
         let teamAIndex = Int.random(in: 0..<species.count)
-        let teamBIndex = (teamAIndex + 1) % species.count
+        var teamBIndex = Int.random(in: 0..<species.count)
+        while teamBIndex == teamAIndex {
+            teamBIndex = Int.random(in: 0..<species.count)
+        }
         
         let teamA = species[teamAIndex]
         let teamB = species[teamBIndex]
@@ -122,9 +153,12 @@ class GameRun: ObservableObject {
         print("   Team A: \(teamACount)x \(teamAName)")
         print("   Team B: \(teamBCount)x \(teamBName)")
         
-        // Create team JSON with species IDs - fixed to handle all counts correctly
-        let teamAMembers = (0..<teamACount).map { _ in "{\"species_id\": \"\(teamAName.lowercased())\"}" }.joined(separator: ",")
-        let teamBMembers = (0..<teamBCount).map { _ in "{\"species_id\": \"\(teamBName.lowercased())\"}" }.joined(separator: ",")
+        // Create team JSON with species IDs - convert names to file format (lowercase with underscores)
+        let teamASpeciesId = teamAName.lowercased().replacingOccurrences(of: " ", with: "_")
+        let teamBSpeciesId = teamBName.lowercased().replacingOccurrences(of: " ", with: "_")
+        
+        let teamAMembers = (0..<teamACount).map { _ in "{\"species_id\": \"\(teamASpeciesId)\"}" }.joined(separator: ",")
+        let teamBMembers = (0..<teamBCount).map { _ in "{\"species_id\": \"\(teamBSpeciesId)\"}" }.joined(separator: ",")
         
         let teamAJson = "[\(teamAMembers)]"
         let teamBJson = "[\(teamBMembers)]"

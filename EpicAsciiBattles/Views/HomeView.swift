@@ -17,17 +17,11 @@ struct HomeView: View {
                 
                 // Title with ASCII border
                 VStack(spacing: 10) {
-                    Text("═══════════════════════")
-                        .font(.system(.title3, design: .monospaced))
-                        .foregroundColor(DFColors.yellow)
+                    TilesetTextView(text: "=======================", color: DFColors.yellow, size: 16)
                     
-                    Text("EPIC ASCII BATTLES")
-                        .font(.system(.largeTitle, design: .monospaced, weight: .bold))
-                        .foregroundColor(DFColors.white)
+                    TilesetTextView(text: "EPIC ASCII BATTLES", color: DFColors.white, size: 20)
                     
-                    Text("═══════════════════════")
-                        .font(.system(.title3, design: .monospaced))
-                        .foregroundColor(DFColors.yellow)
+                    TilesetTextView(text: "=======================", color: DFColors.yellow, size: 16)
                 }
                 .padding()
                 .background(DFColors.dgray.opacity(0.5))
@@ -40,16 +34,13 @@ struct HomeView: View {
                     Button(action: {
                         gameState.startNewRun()
                     }) {
-                        HStack {
-                            Text("▶")
-                                .font(.system(.title2, design: .monospaced))
-                            Text("Start Run")
-                                .font(.system(.title2, design: .monospaced, weight: .semibold))
+                        HStack(spacing: 8) {
+                            TilesetTextView(text: ">", color: DFColors.black, size: 18)
+                            TilesetTextView(text: "Start", color: DFColors.black, size: 18)
                         }
                         .frame(maxWidth: 300)
                         .padding()
                         .background(DFColors.lgreen)
-                        .foregroundColor(DFColors.black)
                         .cornerRadius(10)
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
@@ -60,16 +51,13 @@ struct HomeView: View {
                     Button(action: {
                         gameState.navigationPath.append(NavigationDestination.leaderboard)
                     }) {
-                        HStack {
-                            Text("☆")
-                                .font(.system(.title2, design: .monospaced))
-                            Text("Leaderboard")
-                                .font(.system(.title3, design: .monospaced))
+                        HStack(spacing: 8) {
+                            TilesetTextView(text: "*", color: DFColors.yellow, size: 18)
+                            TilesetTextView(text: "Leaderboard", color: DFColors.yellow, size: 16)
                         }
                         .frame(maxWidth: 300)
                         .padding()
                         .background(DFColors.dgray)
-                        .foregroundColor(DFColors.yellow)
                         .cornerRadius(10)
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
@@ -80,16 +68,13 @@ struct HomeView: View {
                     Button(action: {
                         gameState.navigationPath.append(NavigationDestination.settings)
                     }) {
-                        HStack {
-                            Text("⚙")
-                                .font(.system(.title2, design: .monospaced))
-                            Text("Settings")
-                                .font(.system(.title3, design: .monospaced))
+                        HStack(spacing: 8) {
+                            TilesetTextView(text: "O", color: DFColors.lgray, size: 18)
+                            TilesetTextView(text: "Settings", color: DFColors.lgray, size: 16)
                         }
                         .frame(maxWidth: 300)
                         .padding()
                         .background(DFColors.dgray)
-                        .foregroundColor(DFColors.lgray)
                         .cornerRadius(10)
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
@@ -131,6 +116,36 @@ struct ASCIIBackgroundView: View {
                     }
                 }
             }
+        }
+    }
+}
+
+/// Renders text using tileset glyphs instead of system fonts
+struct TilesetTextView: View {
+    let text: String
+    let color: Color
+    let size: CGFloat
+    
+    var body: some View {
+        let renderer = TilesetRenderer.shared
+        if renderer.isAvailable {
+            HStack(spacing: 0) {
+                ForEach(Array(text.enumerated()), id: \.offset) { _, char in
+                    let index = renderer.tileIndex(for: char)
+                    let scale = size / CGFloat(renderer.sourceTileWidth)
+                    if let tileImage = renderer.getTile(index: index, color: UIColor(color), scale: scale) {
+                        Image(uiImage: tileImage)
+                            .resizable()
+                            .interpolation(.none)
+                            .frame(width: size, height: size)
+                    }
+                }
+            }
+        } else {
+            // Fallback to system font if tileset not loaded
+            Text(text)
+                .font(.system(size: size * 0.7, design: .monospaced))
+                .foregroundColor(color)
         }
     }
 }

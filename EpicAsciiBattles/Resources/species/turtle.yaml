@@ -1,0 +1,63 @@
+id: "turtle"
+name: "Turtle"
+glyph: "t"
+color: "green"
+
+base_stats:
+  mass_kg: 10.0
+  speed: 2
+  stamina: 100
+  pain_tolerance: 80
+  base_morale: 80
+  aggression: 30
+
+parts:
+  - part_id: "torso"
+    display_name: "Torso"
+    count: 1
+    attachments: []
+    tags: ["torso", "vital"]
+    hp: 40
+    armor: 3
+    bleed_rate: 3
+    hit_weight: 8
+  
+  - part_id: "head"
+    display_name: "Head"
+    count: 1
+    attachments: ["torso"]
+    tags: ["head", "brain", "vital"]
+    hp: 18
+    armor: 2
+    bleed_rate: 5
+    hit_weight: 4
+  
+  - part_id: "shell"
+    display_name: "Shell"
+    count: 1
+    attachments: ["torso"]
+    tags: ["armor"]
+    hp: 50
+    armor: 15
+    bleed_rate: 0
+    hit_weight: 10
+  
+  - part_id: "leg"
+    display_name: "Leg"
+    count: 4
+    attachments: ["torso"]
+    tags: ["leg", "locomotion"]
+    hp: 12
+    armor: 4
+    bleed_rate: 2
+    hit_weight: 3
+  
+  - part_id: "tail"
+    display_name: "Tail"
+    count: 1
+    attachments: ["torso"]
+    tags: ["tail"]
+    hp: 8
+    armor: 3
+    bleed_rate: 1
+    hit_weight: 2

@@ -1,0 +1,73 @@
+id: "goose"
+name: "Goose"
+glyph: "g"
+color: "white"
+
+base_stats:
+  mass_kg: 5.0
+  speed: 6
+  stamina: 70
+  pain_tolerance: 50
+  base_morale: 70
+  aggression: 65
+
+parts:
+  - part_id: "torso"
+    display_name: "Torso"
+    count: 1
+    attachments: []
+    tags: ["torso", "vital"]
+    hp: 25
+    armor: 1
+    bleed_rate: 3
+    hit_weight: 10
+  
+  - part_id: "head"
+    display_name: "Head"
+    count: 1
+    attachments: ["torso"]
+    tags: ["head", "brain", "vital"]
+    hp: 15
+    armor: 0
+    bleed_rate: 5
+    hit_weight: 4
+  
+  - part_id: "neck"
+    display_name: "Neck"
+    count: 1
+    attachments: ["head", "torso"]
+    tags: ["neck"]
+    hp: 10
+    armor: 0
+    bleed_rate: 6
+    hit_weight: 3
+  
+  - part_id: "beak"
+    display_name: "Beak"
+    count: 1
+    attachments: ["head"]
+    tags: ["peck_weapon", "sharp"]
+    hp: 8
+    armor: 2
+    bleed_rate: 0
+    hit_weight: 2
+  
+  - part_id: "wing"
+    display_name: "Wing"
+    count: 2
+    attachments: ["torso"]
+    tags: ["wing", "flight", "balance"]
+    hp: 12
+    armor: 0
+    bleed_rate: 1
+    hit_weight: 4
+  
+  - part_id: "leg"
+    display_name: "Leg"
+    count: 2
+    attachments: ["torso"]
+    tags: ["leg", "stance"]
+    hp: 10
+    armor: 0
+    bleed_rate: 2
+    hit_weight: 5

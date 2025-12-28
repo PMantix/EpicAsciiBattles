@@ -1,0 +1,43 @@
+id: "space_void"
+name: "Space Void"
+glyph: "V"
+color: "black"
+
+base_stats:
+  mass_kg: 50.0
+  speed: 5
+  stamina: 150
+  pain_tolerance: 100
+  base_morale: 100
+  aggression: 70
+
+parts:
+  - part_id: "core"
+    display_name: "Core"
+    count: 1
+    attachments: []
+    tags: ["torso", "vital", "ethereal"]
+    hp: 60
+    armor: 8
+    bleed_rate: 0
+    hit_weight: 10
+  
+  - part_id: "void_matter"
+    display_name: "Void Matter"
+    count: 1
+    attachments: ["core"]
+    tags: ["ethereal"]
+    hp: 50
+    armor: 5
+    bleed_rate: 0
+    hit_weight: 8
+  
+  - part_id: "tendril"
+    display_name: "Tendril"
+    count: 6
+    attachments: ["core"]
+    tags: ["grasp_weapon", "ethereal"]
+    hp: 20
+    armor: 2
+    bleed_rate: 0
+    hit_weight: 3

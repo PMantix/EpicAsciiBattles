@@ -11,13 +11,9 @@ struct RoundOfferView: View {
                 VStack(spacing: 30) {
                     // Header
                     VStack(spacing: 10) {
-                        Text("Round \(run.round)")
-                            .font(.system(.title, design: .monospaced, weight: .bold))
-                            .foregroundColor(DFColors.white)
+                        TilesetTextView(text: "Round \(run.round)", color: DFColors.white, size: 20)
                         
-                        Text("Score: \(run.score)")
-                            .font(.system(.title3, design: .monospaced))
-                            .foregroundColor(DFColors.lgray)
+                        TilesetTextView(text: "Score: \(run.score)", color: DFColors.lgray, size: 16)
                     }
                     .padding(.top, 40)
                     
@@ -36,9 +32,7 @@ struct RoundOfferView: View {
                             selectTeam(0, run: run)
                         }
                         
-                        Text("VS")
-                            .font(.system(.title, design: .monospaced, weight: .heavy))
-                            .foregroundColor(DFColors.lred)
+                        TilesetTextView(text: "VS", color: DFColors.lred, size: 24)
                         
                         // Team B
                         TeamCard(
@@ -55,9 +49,7 @@ struct RoundOfferView: View {
                     
                     Spacer()
                     
-                    Text("Tap a team to choose your pick")
-                        .font(.system(.caption, design: .monospaced))
-                        .foregroundColor(DFColors.lgray)
+                    TilesetTextView(text: "Tap a team to choose your pick", color: DFColors.lgray, size: 12)
                         .padding(.bottom, 40)
                 }
             }
@@ -82,9 +74,7 @@ struct TeamCard: View {
             // Show individual combatants
             CombatantGrid(glyph: glyph, count: count, color: color)
             
-            Text("x\(count) \(name)")
-                .font(.system(.title2, design: .monospaced, weight: .semibold))
-                .foregroundColor(DFColors.white)
+            TilesetTextView(text: "x\(count) \(name)", color: DFColors.white, size: 18)
         }
         .frame(maxWidth: .infinity)
         .padding(30)

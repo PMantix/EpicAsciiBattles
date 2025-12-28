@@ -1,0 +1,83 @@
+id: "dragon"
+name: "Dragon"
+glyph: "D"
+color: "red"
+
+base_stats:
+  mass_kg: 800.0
+  speed: 7
+  stamina: 200
+  pain_tolerance: 95
+  base_morale: 100
+  aggression: 85
+
+parts:
+  - part_id: "torso"
+    display_name: "Torso"
+    count: 1
+    attachments: []
+    tags: ["torso", "vital"]
+    hp: 100
+    armor: 12
+    bleed_rate: 4
+    hit_weight: 15
+  
+  - part_id: "head"
+    display_name: "Head"
+    count: 1
+    attachments: ["torso"]
+    tags: ["head", "brain", "vital"]
+    hp: 50
+    armor: 10
+    bleed_rate: 6
+    hit_weight: 6
+  
+  - part_id: "neck"
+    display_name: "Neck"
+    count: 1
+    attachments: ["torso", "head"]
+    tags: ["neck"]
+    hp: 40
+    armor: 8
+    bleed_rate: 5
+    hit_weight: 4
+  
+  - part_id: "jaw"
+    display_name: "Jaw"
+    count: 1
+    attachments: ["head"]
+    tags: ["bite_weapon", "sharp", "crushing"]
+    hp: 45
+    armor: 8
+    bleed_rate: 2
+    hit_weight: 5
+  
+  - part_id: "wing"
+    display_name: "Wing"
+    count: 2
+    attachments: ["torso"]
+    tags: ["wing", "flight", "balance"]
+    hp: 45
+    armor: 6
+    bleed_rate: 3
+    hit_weight: 4
+  
+  - part_id: "leg"
+    display_name: "Leg"
+    count: 4
+    attachments: ["torso"]
+    tags: ["leg", "locomotion", "claw_weapon"]
+    hp: 35
+    armor: 8
+    bleed_rate: 3
+    hit_weight: 5
+  
+  - part_id: "tail"
+    display_name: "Tail"
+    count: 1
+    attachments: ["torso"]
+    tags: ["tail", "balance", "bash_weapon"]
+    hp: 40
+    armor: 10
+    bleed_rate: 2
+    hit_weight: 6
