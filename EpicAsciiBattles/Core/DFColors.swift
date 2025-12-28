@@ -30,8 +30,9 @@ struct DFColors {
         case "green": return green
         case "cyan": return cyan
         case "red": return red
-        case "magenta", "pink": return magenta
-        case "brown", "gray", "grey": return brown
+        case "magenta", "pink", "lpink": return magenta
+        case "brown": return brown
+        case "gray", "grey": return lgray
         case "lgray", "lightgray", "light_gray": return lgray
         case "dgray", "darkgray", "dark_gray": return dgray
         case "lblue", "lightblue", "light_blue": return lblue
@@ -40,6 +41,8 @@ struct DFColors {
         case "lred", "lightred", "light_red": return lred
         case "lmagenta", "lightmagenta", "light_magenta": return lmagenta
         case "yellow": return yellow
+        case "orange": return Color(red: 255/255, green: 150/255, blue: 50/255)
+        case "purple": return Color(red: 150/255, green: 70/255, blue: 200/255)
         case "white": return white
         default: return white
         }

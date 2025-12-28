@@ -9,6 +9,7 @@ struct BattleView: View {
     @State private var timer: Timer?
     @State private var hitBlips: [HitBlip] = []
     @State private var showEndOverlay = false
+    @State private var battleResult: BattleResult? = nil // WIN or LOSS result
     @State private var persistentMarks: [GridMark] = [] // Blood, gibs, trampled terrain
     @State private var trampleMap: [Int: Int] = [:] // Track how many times each tile has been walked on
     @State private var hitFlashes: [HitFlash] = [] // Actor hit flashes for brightening
@@ -52,11 +53,11 @@ struct BattleView: View {
                             .foregroundColor(.green.opacity(0.5))
                     }
                     
-                    // END overlay
+                    // WIN/LOSS overlay
                     if showEndOverlay {
                         VStack {
                             Spacer()
-                            EndBannerView()
+                            EndBannerView(result: battleResult)
                                 .padding(.bottom, 40)
                         }
                     }
@@ -463,18 +464,43 @@ struct BattleView: View {
             if run.wasCorrect {
                 let points = run.calculateScore(isUnderdog: false)
                 run.score += points
+                battleResult = BattleResult(isWin: true, points: points, totalScore: run.score)
             } else {
                 run.isActive = false
+                battleResult = BattleResult(isWin: false, points: 0, totalScore: run.score)
             }
             
-            // Show END overlay
+            // Show result overlay
             withAnimation {
                 showEndOverlay = true
             }
             
-            // Wait for user tap to continue
+            // Auto-navigate after delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                if run.wasCorrect {
+                    // Win: reset and go to next round selection
+                    run.pickedTeam = nil
+                    run.battleCore = nil
+                    run.battleFinished = false
+                    run.wasCorrect = false
+                    run.generateNextMatchup()
+                    
+                    // Go back to round offer (pop battle view)
+                    gameState.navigationPath.removeLast()
+                } else {
+                    // Loss: go to run summary
+                    gameState.navigationPath.append(NavigationDestination.runSummary)
+                }
+            }
         }
     }
+}
+
+// Battle result data for end overlay
+struct BattleResult {
+    let isWin: Bool
+    let points: Int
+    let totalScore: Int
 }
 
 struct HitBlip: Identifiable {
@@ -756,29 +782,41 @@ struct CombatLogView: View {
     }
 }
 
-// END banner overlay
+// END banner overlay - shows WIN or LOSS with points
 struct EndBannerView: View {
     @EnvironmentObject var gameState: GameState
+    let result: BattleResult?
     
     var body: some View {
         VStack(spacing: 20) {
-            // ASCII "END" banner using tileset
-            VStack(spacing: 0) {
-                TilesetTextView(text: "##### #  # ###", color: DFColors.yellow, size: 20)
-                TilesetTextView(text: "#     ## # # #", color: DFColors.yellow, size: 20)
-                TilesetTextView(text: "###   # ## # #", color: DFColors.yellow, size: 20)
-                TilesetTextView(text: "#     #  # # #", color: DFColors.yellow, size: 20)
-                TilesetTextView(text: "##### #  # ###", color: DFColors.yellow, size: 20)
-            }
-            
-            // Continue button
-            Button(action: {
-                gameState.navigationPath.append(NavigationDestination.roundResult)
-            }) {
-                TilesetTextView(text: "[ Continue ]", color: DFColors.white, size: 18)
-                    .padding()
-                    .background(DFColors.lgreen)
-                    .cornerRadius(8)
+            if let result = result {
+                if result.isWin {
+                    // WIN banner
+                    VStack(spacing: 8) {
+                        TilesetTextView(text: "##  ## ## #  #", color: DFColors.lgreen, size: 18)
+                        TilesetTextView(text: "## ## #  ##  #", color: DFColors.lgreen, size: 18)
+                        TilesetTextView(text: "# # # #  # # #", color: DFColors.lgreen, size: 18)
+                        TilesetTextView(text: "#   # #  #  ##", color: DFColors.lgreen, size: 18)
+                        TilesetTextView(text: "#   # ## #  ##", color: DFColors.lgreen, size: 18)
+                    }
+                    
+                    // Points earned
+                    TilesetTextView(text: "+\(result.points) points", color: DFColors.yellow, size: 20)
+                    TilesetTextView(text: "Total: \(result.totalScore)", color: DFColors.white, size: 16)
+                } else {
+                    // LOSS banner
+                    VStack(spacing: 8) {
+                        TilesetTextView(text: "#    ### ### ###", color: DFColors.lred, size: 18)
+                        TilesetTextView(text: "#    # # #   #  ", color: DFColors.lred, size: 18)
+                        TilesetTextView(text: "#    # # ##  ## ", color: DFColors.lred, size: 18)
+                        TilesetTextView(text: "#    # #   #   #", color: DFColors.lred, size: 18)
+                        TilesetTextView(text: "#### ### ### ###", color: DFColors.lred, size: 18)
+                    }
+                    
+                    // Final score
+                    TilesetTextView(text: "Final Score: \(result.totalScore)", color: DFColors.yellow, size: 16)
+                    TilesetTextView(text: "Run Ended", color: DFColors.lgray, size: 14)
+                }
             }
         }
         .padding(30)

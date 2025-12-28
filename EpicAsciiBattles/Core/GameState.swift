@@ -45,6 +45,8 @@ class GameRun: ObservableObject {
     @Published var teamBName: String = ""
     @Published var teamBCount: Int = 0
     @Published var teamBGlyph: Character = " "
+    @Published var teamAColorName: String = "lgreen"
+    @Published var teamBColorName: String = "lred"
     
     // Battle state
     @Published var pickedTeam: Int? = nil // 0 = A, 1 = B
@@ -62,38 +64,38 @@ class GameRun: ObservableObject {
     func generateNextMatchup() {
         round += 1
         
-        // All available species
-        let species = [
-            ("Ant", "a", 10...30),
-            ("Baboon", "b", 1...5),
-            ("Bear", "B", 1...3),
-            ("Cat", "c", 2...8),
-            ("Chicken", "c", 2...10),
-            ("Chimpanzee", "C", 1...4),
-            ("Cockroach", "i", 10...25),
-            ("Dog", "o", 2...7),
-            ("Donkey", "d", 1...4),
-            ("Dragon", "D", 1...2),
-            ("Duck", "u", 3...12),
-            ("Flamingo", "f", 2...8),
-            ("Gecko", "e", 5...15),
-            ("Gerbil", "g", 6...18),
-            ("Goose", "G", 2...9),
-            ("Horse", "H", 1...4),
-            ("Alligator", "A", 1...3),
-            ("Lion", "L", 1...3),
-            ("Mouse", "m", 8...25),
-            ("Rat", "r", 6...20),
-            ("Salamander", "l", 4...12),
-            ("Snake", "s", 2...8),
-            ("Spider", "m", 5...15),
-            ("Tiger", "T", 1...3),
-            ("Turtle", "t", 2...6),
-            ("Wolf", "w", 2...6),
-            ("Demon", "&", 1...2),
-            ("Lava Beast", "@", 1...2),
-            ("Rock Monster", "R", 1...2),
-            ("Space Void", "V", 1...3)
+        // All available species: (name, glyph, count range, color)
+        let species: [(String, String, ClosedRange<Int>, String)] = [
+            ("Ant", "a", 10...30, "red"),
+            ("Baboon", "b", 1...5, "brown"),
+            ("Bear", "B", 1...3, "brown"),
+            ("Cat", "c", 2...8, "gray"),
+            ("Chicken", "c", 2...10, "yellow"),
+            ("Chimpanzee", "C", 1...4, "brown"),
+            ("Cockroach", "i", 10...25, "brown"),
+            ("Dog", "o", 2...7, "brown"),
+            ("Donkey", "d", 1...4, "gray"),
+            ("Dragon", "D", 1...2, "lred"),
+            ("Duck", "u", 3...12, "yellow"),
+            ("Flamingo", "f", 2...8, "lpink"),
+            ("Gecko", "e", 5...15, "lgreen"),
+            ("Gerbil", "g", 6...18, "brown"),
+            ("Goose", "G", 2...9, "white"),
+            ("Horse", "H", 1...4, "brown"),
+            ("Alligator", "A", 1...3, "green"),
+            ("Lion", "L", 1...3, "yellow"),
+            ("Mouse", "m", 8...25, "gray"),
+            ("Rat", "r", 6...20, "gray"),
+            ("Salamander", "l", 4...12, "orange"),
+            ("Snake", "s", 2...8, "green"),
+            ("Spider", "m", 5...15, "black"),
+            ("Tiger", "T", 1...3, "orange"),
+            ("Turtle", "t", 2...6, "green"),
+            ("Wolf", "w", 2...6, "gray"),
+            ("Demon", "&", 1...2, "lred"),
+            ("Lava Beast", "@", 1...2, "orange"),
+            ("Rock Monster", "R", 1...2, "gray"),
+            ("Space Void", "V", 1...3, "purple")
         ]
         
         // Pick two different species
@@ -109,10 +111,12 @@ class GameRun: ObservableObject {
         teamAName = teamA.0
         teamAGlyph = Character(teamA.1)
         teamACount = Int.random(in: teamA.2)
+        teamAColorName = teamA.3
         
         teamBName = teamB.0
         teamBGlyph = Character(teamB.1)
         teamBCount = Int.random(in: teamB.2)
+        teamBColorName = teamB.3
     }
     
     func pickTeam(_ team: Int) {

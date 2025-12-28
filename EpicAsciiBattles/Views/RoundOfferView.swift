@@ -26,20 +26,20 @@ struct RoundOfferView: View {
                             name: run.teamAName,
                             count: run.teamACount,
                             glyph: run.teamAGlyph,
-                            color: DFColors.lgreen
+                            color: DFColors.named(run.teamAColorName)
                         )
                         .onTapGesture {
                             selectTeam(0, run: run)
                         }
                         
-                        TilesetTextView(text: "VS", color: DFColors.lred, size: 24)
+                        TilesetTextView(text: "VS", color: DFColors.yellow, size: 24)
                         
                         // Team B
                         TeamCard(
                             name: run.teamBName,
                             count: run.teamBCount,
                             glyph: run.teamBGlyph,
-                            color: DFColors.lred
+                            color: DFColors.named(run.teamBColorName)
                         )
                         .onTapGesture {
                             selectTeam(1, run: run)
