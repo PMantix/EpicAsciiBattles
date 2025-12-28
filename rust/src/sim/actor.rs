@@ -137,4 +137,25 @@ impl Actor {
     pub fn get_total_bleed_rate(&self) -> u32 {
         self.parts.iter().map(|p| p.bleed_rate).sum()
     }
+    
+    /// Reduce morale (capped at 0)
+    pub fn reduce_morale(&mut self, amount: u32) {
+        self.morale = self.morale.saturating_sub(amount);
+    }
+    
+    /// Restore morale (capped at 100)
+    pub fn restore_morale(&mut self, amount: u32) {
+        self.morale = (self.morale + amount).min(100);
+    }
+    
+    /// Check if actor is fleeing (morale below threshold)
+    pub fn is_fleeing(&self) -> bool {
+        self.morale < 30
+    }
+    
+    /// Check if actor is berserk (very rare, high morale + bloodlust conditions)
+    pub fn is_berserk(&self) -> bool {
+        // Berserk requires high base morale but also being wounded
+        self.morale >= 80 && self.hp < self.max_hp / 2
+    }
 }

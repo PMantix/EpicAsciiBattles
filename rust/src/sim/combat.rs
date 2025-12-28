@@ -53,6 +53,10 @@ impl CombatResolver {
         let effective_armor = (armor - penetration).max(0);
         let final_damage = (base_damage - effective_armor).max(1);
         
+        // Morale drop from taking damage (before applying damage to parts)
+        let morale_loss = (final_damage as u32 / 3).max(1);
+        defender.reduce_morale(morale_loss);
+        
         // Apply damage to part
         let part_destroyed = if let Some(part) = defender.parts.iter_mut().find(|p| p.part_id == target_part_id) {
             part.hp -= final_damage;
@@ -83,6 +87,9 @@ impl CombatResolver {
                     x: defender.x,
                     y: defender.y,
                 });
+                
+                // Severe morale drop from losing a body part
+                defender.reduce_morale(15);
             }
             
             // Remove the part and apply effects

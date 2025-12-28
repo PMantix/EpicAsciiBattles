@@ -15,6 +15,28 @@ impl SimpleAI {
             return None;
         }
         
+        // Check for fleeing - override all other behavior
+        if actor.is_fleeing() {
+            // Try to move away from nearest enemy
+            let alive_enemies: Vec<&Actor> = enemies.iter().filter(|e| e.is_alive()).collect();
+            if let Some(nearest) = alive_enemies.iter().min_by(|a, b| {
+                let dist_a = CombatResolver::distance(actor.x, actor.y, a.x, a.y);
+                let dist_b = CombatResolver::distance(actor.x, actor.y, b.x, b.y);
+                dist_a.partial_cmp(&dist_b).unwrap()
+            }) {
+                // Move away from nearest enemy
+                let dx = (actor.x - nearest.x).signum();
+                let dy = (actor.y - nearest.y).signum();
+                return Some(Action::move_to(actor.id, actor.x + dx, actor.y + dy));
+            } else {
+                // No enemies - wait
+                return Some(Action::wait(actor.id));
+            }
+        }
+        
+        // Check for berserk - attack with bonus aggression
+        let is_berserk = actor.is_berserk();
+        
         // Get available attacks
         let attacks = actor.get_available_attacks();
         if attacks.is_empty() {

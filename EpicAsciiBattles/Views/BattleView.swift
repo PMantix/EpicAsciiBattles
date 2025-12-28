@@ -2,14 +2,17 @@ import SwiftUI
 
 struct BattleView: View {
     @EnvironmentObject var gameState: GameState
+    @StateObject private var settings = GameSettings.shared
     @State private var battleState: BattleState?
-    @State private var combatLog: [String] = []
+    @State private var combatLog: [LogEntry] = []
     @State private var isSimulating = false
     @State private var timer: Timer?
     @State private var hitBlips: [HitBlip] = []
     @State private var showEndOverlay = false
     @State private var persistentMarks: [GridMark] = [] // Blood, gibs, trampled terrain
     @State private var trampleMap: [Int: Int] = [:] // Track how many times each tile has been walked on
+    @State private var hitFlashes: [HitFlash] = [] // Actor hit flashes for brightening
+    @State private var backgroundTints: [BackgroundTint] = [] // Blood/vomit background tints
     
     var body: some View {
         ZStack {
@@ -41,7 +44,8 @@ struct BattleView: View {
                         .fill(DFColors.black)
                     
                     if let state = battleState {
-                        BattleGridView(battleState: state, blips: hitBlips, persistentMarks: persistentMarks, trampleMap: trampleMap)
+                        BattleGridView(battleState: state, blips: hitBlips, persistentMarks: persistentMarks, 
+                                     trampleMap: trampleMap, hitFlashes: hitFlashes, backgroundTints: backgroundTints)
                     } else {
                         Text("[Initializing Battle...]")
                             .font(.system(.title, design: .monospaced))
@@ -81,9 +85,10 @@ struct BattleView: View {
                         ScrollView {
                             VStack(alignment: .leading, spacing: 2) {
                                 ForEach(Array(combatLog.enumerated()), id: \.offset) { index, entry in
-                                    Text(entry)
+                                    Text(entry.text)
                                         .font(.system(.caption2, design: .monospaced))
-                                        .foregroundColor(.green)
+                                        .foregroundColor(entry.color)
+                                        .fontWeight(entry.isCritical ? .bold : .regular)
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .id(index)
                                 }
@@ -142,11 +147,11 @@ struct BattleView: View {
         .onAppear {
             // Add initial log entry
             if let run = gameState.currentRun {
-                combatLog.append("===== BATTLE START =====")
-                combatLog.append("Team A: \(run.teamACount)x \(run.teamAName)")
-                combatLog.append("Team B: \(run.teamBCount)x \(run.teamBName)")
-                combatLog.append("========================")
-                combatLog.append("")
+                combatLog.append(LogEntry(text: "===== BATTLE START =====", color: DFColors.yellow, isCritical: true))
+                combatLog.append(LogEntry(text: "Team A: \(run.teamACount)x \(run.teamAName)", color: DFColors.lgreen, isCritical: false))
+                combatLog.append(LogEntry(text: "Team B: \(run.teamBCount)x \(run.teamBName)", color: DFColors.lred, isCritical: false))
+                combatLog.append(LogEntry(text: "========================", color: DFColors.yellow, isCritical: true))
+                combatLog.append(LogEntry(text: "", color: .white, isCritical: false))
                 
                 print("🎮 Battle View appeared")
                 print("   Team A: \(run.teamACount)x \(run.teamAName)")
@@ -257,67 +262,152 @@ struct BattleView: View {
     private func handleEvents(_ events: [BattleEvent], state: BattleState?) {
         let now = Date()
         hitBlips = hitBlips.filter { $0.expires > now }
+        hitFlashes = hitFlashes.filter { $0.expires > now }
+        backgroundTints = backgroundTints.filter { $0.expires > now }
         
         guard let state = state else { return }
         let gridWidth = Int(state.grid.width)
+        let gore = settings.goreIntensity
+        let motionScale = settings.reducedMotion ? 0.5 : 1.0
+        
+        // Build actor name map for flavorful descriptions
+        var actorNames: [UInt32: String] = [:]
+        for actor in state.teamA {
+            actorNames[actor.id] = formatActorName(actor)
+        }
+        for actor in state.teamB {
+            actorNames[actor.id] = formatActorName(actor)
+        }
         
         for event in events {
-            combatLog.append(event.describe())
+            let logEntry = event.describe(names: actorNames)
+            if !logEntry.isEmpty {
+                // Determine color and criticality based on event type
+                let (color, isCritical) = eventStyle(for: event)
+                combatLog.append(LogEntry(text: logEntry, color: color, isCritical: isCritical))
+            }
+            
             switch event {
-            case .hit(let attackerId, let defenderId, _, _, _):
+            case .hit(let attackerId, let defenderId, _, let damage, _):
                 if let (x, y) = actorPosition(defenderId, state: state) {
-                    let glyphs = ["/", "\\", "x", "X"]
+                    // Hit flash on defender (brighten actor glyph)
+                    addHitFlash(actorId: defenderId, duration: 0.15 * motionScale)
+                    
+                    // Impact particles
+                    let glyphs = ["/", "\\", "x", "X", "*"]
                     let glyph = glyphs.randomElement() ?? "x"
-                    addBlip(x: x, y: y, glyph: glyph, color: .red, ttl: 0.45)
+                    addBlip(x: x, y: y, glyph: glyph, color: .red, ttl: 0.45 * gore.particleDuration * motionScale)
+                    
+                    // Blood tint on background
+                    let tintRadius = damage > 10 ? 2 : 1
+                    addBackgroundTint(x: x, y: y, radius: tintRadius, color: .red, 
+                                     opacity: gore.tintOpacity, duration: 0.8 * gore.particleDuration)
                 }
-                // small flash on attacker too
+                // Flash on attacker too
                 if let (x, y) = actorPosition(attackerId, state: state) {
-                    addBlip(x: x, y: y, glyph: "!", color: .orange, ttl: 0.3)
+                    addHitFlash(actorId: attackerId, duration: 0.1 * motionScale)
+                    addBlip(x: x, y: y, glyph: "!", color: .orange, ttl: 0.25 * motionScale)
                 }
-            case .bleed(let actorId, _):
+                
+            case .bleed(let actorId, let amount):
                 if let (x, y) = actorPosition(actorId, state: state) {
-                    addBlip(x: x, y: y, glyph: "~", color: .red.opacity(0.8), ttl: 0.35)
-                    // Add permanent blood stain
-                    if Double.random(in: 0...1) < 0.4 { // 40% chance
-                        persistentMarks.append(GridMark(x: x, y: y, glyph: ".", color: .red.opacity(0.6), isPermanent: true))
+                    addBlip(x: x, y: y, glyph: "~", color: .red.opacity(0.8), ttl: 0.35 * gore.particleDuration * motionScale)
+                    
+                    // Add permanent blood stains based on gore setting
+                    if Double.random(in: 0...1) < gore.bloodStainChance {
+                        let stainGlyphs = [".", ",", "'", "`"]
+                        let stain = stainGlyphs.randomElement() ?? "."
+                        persistentMarks.append(GridMark(x: x, y: y, glyph: stain, 
+                                                       color: .red.opacity(0.5 + Double(amount) * 0.02), 
+                                                       isPermanent: !gore.fadeMarks))
+                    }
+                    
+                    // Blood tint
+                    addBackgroundTint(x: x, y: y, radius: 1, color: .red, 
+                                     opacity: gore.tintOpacity * 0.7, duration: 0.5)
+                }
+                
+            case .sever(let actorId, let partId, let gibChar, let x, let y):
+                // Multiple gib particles based on gore setting
+                let gibCount = gore.gibCount
+                let gibGlyphs = [String(gibChar), "'", "`", ",", ".", "~", "2", "3"]
+                for _ in 0..<gibCount {
+                    let offsetX = Int32.random(in: -2...2)
+                    let offsetY = Int32.random(in: -2...2)
+                    let gx = max(0, min(state.grid.width - 1, x + offsetX))
+                    let gy = max(0, min(state.grid.height - 1, y + offsetY))
+                    let gib = gibGlyphs.randomElement() ?? String(gibChar)
+                    addBlip(x: gx, y: gy, glyph: gib, color: .red, ttl: (0.5 + Double.random(in: 0...0.5)) * gore.particleDuration * motionScale)
+                    
+                    // Some gibs stay permanently
+                    if Double.random(in: 0...1) < 0.6 {
+                        persistentMarks.append(GridMark(x: gx, y: gy, glyph: gib, 
+                                                       color: .red.opacity(0.7), isPermanent: !gore.fadeMarks))
                     }
                 }
-            case .sever(let actorId, _, let gibChar, let x, let y):
-                addBlip(x: x, y: y, glyph: String(gibChar), color: .red, ttl: 0.7)
-                // Gibs stay on the ground
-                persistentMarks.append(GridMark(x: x, y: y, glyph: String(gibChar), color: .red.opacity(0.8), isPermanent: true))
+                
+                // Big blood splash
                 if let (ax, ay) = actorPosition(actorId, state: state) {
-                    addBlip(x: ax, y: ay, glyph: "*", color: .orange, ttl: 0.7)
+                    addHitFlash(actorId: actorId, duration: 0.3 * motionScale)
+                    addBlip(x: ax, y: ay, glyph: "*", color: .orange, ttl: 0.7 * motionScale)
+                    addBackgroundTint(x: ax, y: ay, radius: 3, color: .red, 
+                                     opacity: gore.tintOpacity * 1.2, duration: 1.5)
                 }
+                
             case .death(_, let x, let y):
-                addBlip(x: x, y: y, glyph: "✚", color: .gray, ttl: 1.0)
-                // Leave a corpse marker
+                addBlip(x: x, y: y, glyph: "✚", color: .gray, ttl: 1.0 * motionScale)
                 persistentMarks.append(GridMark(x: x, y: y, glyph: "X", color: .gray.opacity(0.7), isPermanent: true))
+                addBackgroundTint(x: x, y: y, radius: 2, color: .red, opacity: gore.tintOpacity * 0.8, duration: 2.0)
+                
             case .vomit(_, _, let x, let y):
-                addBlip(x: x, y: y, glyph: "@", color: .green, ttl: 0.6)
-                // Vomit stays on ground
-                persistentMarks.append(GridMark(x: x, y: y, glyph: "~", color: .green.opacity(0.5), isPermanent: true))
+                addBlip(x: x, y: y, glyph: "@", color: .green, ttl: 0.6 * motionScale)
+                persistentMarks.append(GridMark(x: x, y: y, glyph: "~", color: .green.opacity(0.5), isPermanent: !gore.fadeMarks))
+                addBackgroundTint(x: x, y: y, radius: 1, color: .green, opacity: gore.tintOpacity * 0.5, duration: 1.0)
+                
             case .statusChange(let actorId, let status, _):
                 if status == "miss", let (x, y) = actorPosition(actorId, state: state) {
-                    addBlip(x: x, y: y, glyph: "?", color: .yellow, ttl: 0.25)
+                    addBlip(x: x, y: y, glyph: "?", color: .yellow, ttl: 0.25 * motionScale)
                 }
+                
             case .bump(_, let bumpedId, let toX, let toY):
-                addBlip(x: toX, y: toY, glyph: "*", color: .yellow, ttl: 0.3)
+                addBlip(x: toX, y: toY, glyph: "*", color: .yellow, ttl: 0.3 * motionScale)
                 if let (x, y) = actorPosition(bumpedId, state: state) {
-                    addBlip(x: x, y: y, glyph: "!", color: .orange, ttl: 0.25)
+                    addHitFlash(actorId: bumpedId, duration: 0.1 * motionScale)
+                    addBlip(x: x, y: y, glyph: "!", color: .orange, ttl: 0.25 * motionScale)
                 }
+                
             case .move(let actorId, let fromX, let fromY, let toX, let toY):
-                // Track trampling
                 let fromKey = Int(fromY) * gridWidth + Int(fromX)
                 let toKey = Int(toY) * gridWidth + Int(toX)
-                
-                // 30% chance to trample the tile you move from
                 if Double.random(in: 0...1) < 0.3 {
                     trampleMap[fromKey] = min((trampleMap[fromKey] ?? 0) + 1, 4)
                 }
-                // 20% chance to trample where you move to
                 if Double.random(in: 0...1) < 0.2 {
                     trampleMap[toKey] = min((trampleMap[toKey] ?? 0) + 1, 4)
+                }
+            }
+        }
+    }
+    
+    private func addHitFlash(actorId: UInt32, duration: TimeInterval) {
+        let expires = Date().addingTimeInterval(duration)
+        hitFlashes.append(HitFlash(actorId: actorId, expires: expires))
+    }
+    
+    private func addBackgroundTint(x: Int32, y: Int32, radius: Int, color: Color, opacity: Double, duration: TimeInterval) {
+        let expires = Date().addingTimeInterval(duration)
+        for dy in -radius...radius {
+            for dx in -radius...radius {
+                let dist = sqrt(Double(dx * dx + dy * dy))
+                if dist <= Double(radius) {
+                    let falloff = 1.0 - (dist / Double(radius))
+                    backgroundTints.append(BackgroundTint(
+                        x: x + Int32(dx),
+                        y: y + Int32(dy),
+                        color: color,
+                        opacity: opacity * falloff,
+                        expires: expires
+                    ))
                 }
             }
         }
@@ -331,12 +421,14 @@ struct BattleView: View {
             run.wasCorrect = (winner == picked)
             run.battleFinished = true
             
-            combatLog.append("")
-            combatLog.append("═══════════════════════════")
-            combatLog.append(winner == 0 ? "Team A Wins!" : "Team B Wins!")
-            combatLog.append("Your pick: Team \(picked == 0 ? "A" : "B")")
-            combatLog.append(run.wasCorrect ? "CORRECT!" : "INCORRECT")
-            combatLog.append("═══════════════════════════")
+            combatLog.append(LogEntry(text: "", color: .white, isCritical: false))
+            combatLog.append(LogEntry(text: "═══════════════════════════", color: DFColors.yellow, isCritical: true))
+            combatLog.append(LogEntry(text: winner == 0 ? "Team A Wins!" : "Team B Wins!", color: DFColors.lgreen, isCritical: true))
+            combatLog.append(LogEntry(text: "Your pick: Team \(picked == 0 ? "A" : "B")", color: .white, isCritical: false))
+            combatLog.append(LogEntry(text: run.wasCorrect ? "CORRECT!" : "INCORRECT", 
+                                     color: run.wasCorrect ? DFColors.lgreen : DFColors.lred, 
+                                     isCritical: true))
+            combatLog.append(LogEntry(text: "═══════════════════════════", color: DFColors.yellow, isCritical: true))
             
             if run.wasCorrect {
                 let points = run.calculateScore(isUnderdog: false)
@@ -373,11 +465,28 @@ struct GridMark: Identifiable {
     let isPermanent: Bool
 }
 
+struct HitFlash: Identifiable {
+    let id = UUID()
+    let actorId: UInt32
+    let expires: Date
+}
+
+struct BackgroundTint: Identifiable {
+    let id = UUID()
+    let x: Int32
+    let y: Int32
+    let color: Color
+    let opacity: Double
+    let expires: Date
+}
+
 struct BattleGridView: View {
     let battleState: BattleState
     let blips: [HitBlip]
     let persistentMarks: [GridMark]
     let trampleMap: [Int: Int]
+    let hitFlashes: [HitFlash]
+    let backgroundTints: [BackgroundTint]
     
     var body: some View {
         GeometryReader { geometry in
@@ -403,6 +512,8 @@ struct BattleGridView: View {
                 var teamBMap: [Int: ActorInfo] = [:]
                 var blipMap: [Int: HitBlip] = [:]
                 var markMap: [Int: GridMark] = [:]
+                var flashMap: Set<UInt32> = Set()
+                var tintMap: [Int: BackgroundTint] = [:]
                 
                 for actor in battleState.teamA where actor.isAlive {
                     let key = Int(actor.y) * gridWidth + Int(actor.x)
@@ -420,6 +531,17 @@ struct BattleGridView: View {
                     let key = Int(mark.y) * gridWidth + Int(mark.x)
                     markMap[key] = mark
                 }
+                for flash in hitFlashes where flash.expires > now {
+                    flashMap.insert(flash.actorId)
+                }
+                for tint in backgroundTints where tint.expires > now {
+                    let key = Int(tint.y) * gridWidth + Int(tint.x)
+                    // Keep strongest tint per cell
+                    if let existing = tintMap[key], existing.opacity > tint.opacity {
+                        continue
+                    }
+                    tintMap[key] = tint
+                }
                 
                 // Draw exactly one character per tile
                 for y in 0..<gridHeight {
@@ -428,9 +550,19 @@ struct BattleGridView: View {
                         let px = offsetX + CGFloat(x) * cellSize
                         let py = offsetY + CGFloat(y) * cellSize
                         
+                        // Draw background tint if present
+                        if let tint = tintMap[key] {
+                            let tintRect = CGRect(x: px, y: py, width: cellSize, height: cellSize)
+                            context.fill(Path(tintRect), with: .color(tint.color.opacity(tint.opacity)))
+                        }
+                        
                         // Priority: Team A actor > Team B actor > Blip > Terrain
                         if let actor = teamAMap[key] {
-                            let actorColor = DFColors.uiNamed(actor.color)
+                            var actorColor = DFColors.uiNamed(actor.color)
+                            // Apply hit flash brightening
+                            if flashMap.contains(actor.id) {
+                                actorColor = brighten(actorColor, factor: 1.8)
+                            }
                             if useTileset {
                                 drawTile(context, char: actor.glyph, at: CGPoint(x: px, y: py), 
                                         size: cellSize, color: actorColor)
@@ -441,7 +573,11 @@ struct BattleGridView: View {
                                 context.draw(text, at: CGPoint(x: px + cellSize/2, y: py + cellSize/2))
                             }
                         } else if let actor = teamBMap[key] {
-                            let actorColor = DFColors.uiNamed(actor.color)
+                            var actorColor = DFColors.uiNamed(actor.color)
+                            // Apply hit flash brightening
+                            if flashMap.contains(actor.id) {
+                                actorColor = brighten(actorColor, factor: 1.8)
+                            }
                             if useTileset {
                                 drawTile(context, char: actor.glyph, at: CGPoint(x: px, y: py), 
                                         size: cellSize, color: actorColor)
@@ -521,6 +657,48 @@ struct BattleGridView: View {
             context.draw(resolved, at: CGPoint(x: point.x + size/2, y: point.y + size/2))
         }
     }
+    
+    private func brighten(_ color: UIColor, factor: CGFloat) -> UIColor {
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        color.getRed(&r, green: &g, blue: &b, alpha: &a)
+        return UIColor(red: min(1.0, r * factor), green: min(1.0, g * factor), blue: min(1.0, b * factor), alpha: a)
+    }
+    
+    private func formatActorName(_ actor: ActorInfo) -> String {
+        // Format species name with "the" article
+        let speciesName = actor.speciesId.replacingOccurrences(of: "_", with: " ")
+        return "the \(speciesName)"
+    }
+    
+    private func eventStyle(for event: BattleEvent) -> (Color, Bool) {
+        switch event {
+        case .death:
+            return (DFColors.lred, true)
+        case .sever:
+            return (Color(red: 1.0, green: 0.4, blue: 0.2), true) // Orange-red
+        case .hit(_, _, _, let damage, _):
+            return (damage >= 10 ? Color(red: 1.0, green: 0.3, blue: 0.3) : .green, damage >= 15)
+        case .bleed:
+            return (Color(red: 0.8, green: 0.2, blue: 0.2), false)
+        case .vomit:
+            return (Color(red: 0.5, green: 0.8, blue: 0.3), false)
+        case .statusChange(_, let status, let active):
+            if status == "fleeing" && active {
+                return (DFColors.yellow, false)
+            }
+            return (.gray, false)
+        case .bump:
+            return (DFColors.yellow, false)
+        case .move:
+            return (.gray, false)
+        }
+    }
+}
+
+struct LogEntry {
+    let text: String
+    let color: Color
+    let isCritical: Bool
 }
 
 struct CombatLogView: View {

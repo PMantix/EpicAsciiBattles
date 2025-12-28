@@ -293,6 +293,11 @@ impl Battle {
             if actor.is_alive() {
                 let regen = (actor.max_stamina / 10).max(5);
                 actor.stamina = (actor.stamina + regen).min(actor.max_stamina);
+                
+                // Slowly restore morale over time (1 point per tick if not fleeing)
+                if !actor.is_fleeing() {
+                    actor.restore_morale(1);
+                }
             }
         }
         
@@ -430,7 +435,21 @@ impl Battle {
                             }
                         };
                         
+                        // Check for ally deaths BEFORE extending events
+                        let defender_died = combat_events.iter().any(|e| matches!(e, BattleEvent::Death { .. }));
                         events.extend(combat_events);
+                        
+                        // Apply morale penalties if ally died
+                        if defender_died {
+                            let defender_team = if defender_in_a { 0 } else { 1 };
+                            // Apply morale penalty to all allies (not distance-based for simplicity)
+                            let allies = if defender_team == 0 { &mut self.team_a } else { &mut self.team_b };
+                            for ally in allies.iter_mut() {
+                                if ally.is_alive() && ally.id != target_id {
+                                    ally.reduce_morale(5); // Ally death morale penalty
+                                }
+                            }
+                        }
                     }
                 }
                 Action::Move {
