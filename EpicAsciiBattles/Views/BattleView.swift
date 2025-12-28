@@ -2,7 +2,7 @@ import SwiftUI
 
 struct BattleView: View {
     @EnvironmentObject var gameState: GameState
-    @StateObject private var settings = GameSettings.shared
+    @ObservedObject private var settings = GameSettings.shared
     @State private var battleState: BattleState?
     @State private var combatLog: [LogEntry] = []
     @State private var isSimulating = false

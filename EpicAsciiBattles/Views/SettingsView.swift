@@ -2,7 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var gameState: GameState
-    @StateObject private var settings = GameSettings.shared
+    @ObservedObject private var settings = GameSettings.shared
     
     var body: some View {
         ZStack {
