@@ -2,16 +2,16 @@ import Foundation
 import Combine
 
 /// Game settings persisted to UserDefaults
-class GameSettings: ObservableObject {
-    static let shared = GameSettings()
+public class GameSettings: ObservableObject {
+    public static let shared = GameSettings()
     
-    @Published var goreIntensity: GoreIntensity {
+    @Published public var goreIntensity: GoreIntensity {
         didSet {
             UserDefaults.standard.set(goreIntensity.rawValue, forKey: "goreIntensity")
         }
     }
     
-    @Published var reducedMotion: Bool {
+    @Published public var reducedMotion: Bool {
         didSet {
             UserDefaults.standard.set(reducedMotion, forKey: "reducedMotion")
         }
@@ -25,14 +25,14 @@ class GameSettings: ObservableObject {
     }
 }
 
-enum GoreIntensity: String, CaseIterable, Identifiable {
+public enum GoreIntensity: String, CaseIterable, Identifiable {
     case tame = "tame"
     case normal = "normal"
     case grotesque = "grotesque"
     
-    var id: String { rawValue }
+    public var id: String { rawValue }
     
-    var displayName: String {
+    public var displayName: String {
         switch self {
         case .tame: return "Tame"
         case .normal: return "Normal"
@@ -40,7 +40,7 @@ enum GoreIntensity: String, CaseIterable, Identifiable {
         }
     }
     
-    var description: String {
+    public var description: String {
         switch self {
         case .tame: return "Minimal blood and effects"
         case .normal: return "Moderate violence"
@@ -49,7 +49,7 @@ enum GoreIntensity: String, CaseIterable, Identifiable {
     }
     
     // How many gib particles spawn on sever
-    var gibCount: Int {
+    public var gibCount: Int {
         switch self {
         case .tame: return 1
         case .normal: return 3
@@ -58,7 +58,7 @@ enum GoreIntensity: String, CaseIterable, Identifiable {
     }
     
     // TTL multiplier for particle effects
-    var particleDuration: Double {
+    public var particleDuration: Double {
         switch self {
         case .tame: return 0.5
         case .normal: return 1.0
@@ -67,7 +67,7 @@ enum GoreIntensity: String, CaseIterable, Identifiable {
     }
     
     // Blood stain probability
-    var bloodStainChance: Double {
+    public var bloodStainChance: Double {
         switch self {
         case .tame: return 0.1
         case .normal: return 0.4
@@ -76,7 +76,7 @@ enum GoreIntensity: String, CaseIterable, Identifiable {
     }
     
     // Blood tint opacity
-    var tintOpacity: Double {
+    public var tintOpacity: Double {
         switch self {
         case .tame: return 0.1
         case .normal: return 0.3
@@ -85,7 +85,7 @@ enum GoreIntensity: String, CaseIterable, Identifiable {
     }
     
     // Should persistent marks fade over time
-    var fadeMarks: Bool {
+    public var fadeMarks: Bool {
         switch self {
         case .tame: return true
         case .normal: return false
