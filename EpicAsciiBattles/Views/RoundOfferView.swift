@@ -99,52 +99,135 @@ struct RoundOfferView: View {
     }
 }
 
-// Trophy indicator showing potential rewards based on closeness
+// Trophy indicator showing potential rewards with animated combatant preview
 struct TrophyIndicator: View {
     @ObservedObject var run: GameRun
+    @State private var animationOffset: CGFloat = 0
+    
+    // Pick a random glyph for the preview
+    private var previewGlyph: Character {
+        [run.teamAGlyph, run.teamBGlyph].randomElement() ?? "c"
+    }
+    
+    private var previewColor: Color {
+        DFColors.named([run.teamAColorName, run.teamBColorName].randomElement() ?? "white")
+    }
     
     var body: some View {
-        VStack(spacing: 6) {
-            TilesetTextView(text: "Rewards for close battles:", color: DFColors.lgray, size: 10)
+        VStack(spacing: 10) {
+            // Compact header
+            TilesetTextView(text: "Closer = Better!", color: DFColors.yellow, size: 14)
             
-            HStack(spacing: 16) {
-                // Show all three tiers
-                VStack(spacing: 2) {
-                    HStack(spacing: 2) {
-                        TilesetTextView(text: "***", color: DFColors.yellow, size: 14)
-                    }
-                    let points3 = run.calculateScore(survivorCount: 5, totalStartCount: 100) // ~5% = 3 stars
-                    TilesetTextView(text: "+\(points3)", color: DFColors.yellow, size: 10)
-                    TilesetTextView(text: "<10%", color: DFColors.dgray, size: 8)
-                }
+            // Three tiers with animated combatant counts
+            HStack(spacing: 20) {
+                // 3 stars - near annihilation (1-2 survivors from 10)
+                RewardTierView(
+                    stars: 3,
+                    survivorCount: 1,
+                    totalCount: 10,
+                    glyph: previewGlyph,
+                    color: previewColor,
+                    points: run.calculateScore(survivorCount: 5, totalStartCount: 100),
+                    animationOffset: animationOffset
+                )
                 
-                VStack(spacing: 2) {
-                    HStack(spacing: 2) {
-                        TilesetTextView(text: "**", color: DFColors.yellow, size: 14)
-                        TilesetTextView(text: "*", color: DFColors.dgray, size: 14)
-                    }
-                    let points2 = run.calculateScore(survivorCount: 20, totalStartCount: 100) // ~20% = 2 stars
-                    TilesetTextView(text: "+\(points2)", color: DFColors.yellow, size: 10)
-                    TilesetTextView(text: "<25%", color: DFColors.dgray, size: 8)
-                }
+                // 2 stars - very close (2-3 survivors from 10)
+                RewardTierView(
+                    stars: 2,
+                    survivorCount: 2,
+                    totalCount: 10,
+                    glyph: previewGlyph,
+                    color: previewColor,
+                    points: run.calculateScore(survivorCount: 20, totalStartCount: 100),
+                    animationOffset: animationOffset
+                )
                 
-                VStack(spacing: 2) {
-                    HStack(spacing: 2) {
-                        TilesetTextView(text: "*", color: DFColors.yellow, size: 14)
-                        TilesetTextView(text: "**", color: DFColors.dgray, size: 14)
-                    }
-                    let points1 = run.calculateScore(survivorCount: 40, totalStartCount: 100) // ~40% = 1 star
-                    TilesetTextView(text: "+\(points1)", color: DFColors.yellow, size: 10)
-                    TilesetTextView(text: "<50%", color: DFColors.dgray, size: 8)
-                }
+                // 1 star - close enough (4-5 survivors from 10)
+                RewardTierView(
+                    stars: 1,
+                    survivorCount: 4,
+                    totalCount: 10,
+                    glyph: previewGlyph,
+                    color: previewColor,
+                    points: run.calculateScore(survivorCount: 40, totalStartCount: 100),
+                    animationOffset: animationOffset
+                )
             }
             
-            TilesetTextView(text: ">50% survivors = BLOWOUT (run ends!)", color: DFColors.lred, size: 9)
+            // Blowout warning
+            TilesetTextView(text: "6+ left = BLOWOUT!", color: DFColors.lred, size: 12)
         }
-        .padding(.vertical, 10)
+        .padding(.vertical, 12)
         .padding(.horizontal, 16)
         .background(DFColors.dgray.opacity(0.3))
         .cornerRadius(8)
+        .onAppear {
+            withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                animationOffset = 4
+            }
+        }
+    }
+}
+
+// Individual reward tier with animated survivors
+struct RewardTierView: View {
+    let stars: Int
+    let survivorCount: Int
+    let totalCount: Int
+    let glyph: Character
+    let color: Color
+    let points: Int
+    let animationOffset: CGFloat
+    
+    var body: some View {
+        VStack(spacing: 4) {
+            // Stars
+            HStack(spacing: 1) {
+                ForEach(0..<3, id: \.self) { i in
+                    TilesetTextView(text: "*", 
+                                   color: i < stars ? DFColors.yellow : DFColors.dgray, 
+                                   size: 16)
+                }
+            }
+            
+            // Animated survivors in a row
+            HStack(spacing: 2) {
+                ForEach(0..<survivorCount, id: \.self) { i in
+                    AnimatedCombatantView(
+                        glyph: glyph,
+                        color: color,
+                        offset: animationOffset,
+                        delay: Double(i) * 0.15
+                    )
+                }
+            }
+            .frame(height: 20)
+            
+            // Points
+            TilesetTextView(text: "+\(points)", color: DFColors.yellow, size: 12)
+        }
+    }
+}
+
+// Single animated combatant that moves horizontally
+struct AnimatedCombatantView: View {
+    let glyph: Character
+    let color: Color
+    let offset: CGFloat
+    let delay: Double
+    
+    @State private var localOffset: CGFloat = 0
+    
+    var body: some View {
+        TilesetTextView(text: String(glyph), color: color, size: 14)
+            .offset(x: localOffset)
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                    withAnimation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true)) {
+                        localOffset = CGFloat.random(in: -3...3)
+                    }
+                }
+            }
     }
 }
 

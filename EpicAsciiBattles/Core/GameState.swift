@@ -96,7 +96,7 @@ class GameRun: ObservableObject {
             ("Rat", "r", 6...20, "gray"),
             ("Salamander", "l", 4...12, "orange"),
             ("Snake", "s", 2...8, "green"),
-            ("Spider", "m", 5...15, "black"),
+            ("Spider", "m", 5...15, "lgray"),
             ("Tiger", "T", 1...3, "orange"),
             ("Turtle", "t", 2...6, "green"),
             ("Wolf", "w", 2...6, "gray"),
