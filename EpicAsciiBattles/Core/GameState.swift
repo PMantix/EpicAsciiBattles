@@ -48,6 +48,11 @@ class GameRun: ObservableObject {
     @Published var teamAColorName: String = "lgreen"
     @Published var teamBColorName: String = "lred"
     
+    // Team balancing (new meta game)
+    @Published var originalTeamACount: Int = 0
+    @Published var originalTeamBCount: Int = 0
+    @Published var adjustmentsUsed: Int = 0
+    
     // Battle state
     @Published var pickedTeam: Int? = nil // 0 = A, 1 = B
     @Published var battleCore: GameCore?
@@ -112,11 +117,16 @@ class GameRun: ObservableObject {
         teamAGlyph = Character(teamA.1)
         teamACount = Int.random(in: teamA.2)
         teamAColorName = teamA.3
+        originalTeamACount = teamACount
         
         teamBName = teamB.0
         teamBGlyph = Character(teamB.1)
         teamBCount = Int.random(in: teamB.2)
         teamBColorName = teamB.3
+        originalTeamBCount = teamBCount
+        
+        // Reset adjustments for new round
+        adjustmentsUsed = 0
     }
     
     func pickTeam(_ team: Int) {
@@ -188,11 +198,49 @@ class GameRun: ObservableObject {
         }
     }
     
-    func calculateScore(isUnderdog: Bool) -> Int {
-        let baseScore = 100
+    /// Maximum adjustments allowed based on total score (progression unlock)
+    var maxAdjustments: Int {
+        if score >= 2000 { return 6 }
+        if score >= 1000 { return 5 }
+        if score >= 500 { return 4 }
+        if score >= 200 { return 3 }
+        return 2
+    }
+    
+    /// Remaining adjustments this round
+    var adjustmentsRemaining: Int {
+        max(0, maxAdjustments - adjustmentsUsed)
+    }
+    
+    /// Trophy tier based on remaining adjustments (for rewards)
+    var trophyTier: Int {
+        let remaining = adjustmentsRemaining
+        if remaining == 0 { return 0 } // No reward if all used
+        if remaining >= maxAdjustments { return 3 } // Perfect - all remaining
+        if remaining >= maxAdjustments / 2 { return 2 } // Good - half or more
+        return 1 // Some remaining
+    }
+    
+    /// Calculate score for winning based on adjustments remaining
+    func calculateScore(adjustmentsRemaining: Int) -> Int {
+        let baseScore = 50
         let roundMultiplier = 1.0 + 0.1 * Double(round - 1)
-        let underdogBonus = isUnderdog ? 1.25 : 1.0
-        return Int(Double(baseScore) * roundMultiplier * underdogBonus)
+        
+        // Trophy multiplier based on remaining adjustments
+        let trophyMultiplier: Double
+        switch trophyTier {
+        case 3: trophyMultiplier = 3.0  // Perfect - 3 trophies
+        case 2: trophyMultiplier = 2.0  // Good - 2 trophies
+        case 1: trophyMultiplier = 1.5  // Some - 1 trophy
+        default: trophyMultiplier = 1.0 // Used all adjustments
+        }
+        
+        return Int(Double(baseScore) * roundMultiplier * trophyMultiplier)
+    }
+    
+    func calculateScore(isUnderdog: Bool) -> Int {
+        // Legacy method - redirect to new calculation
+        return calculateScore(adjustmentsRemaining: adjustmentsRemaining)
     }
     
     func toRecord() -> RunRecord {

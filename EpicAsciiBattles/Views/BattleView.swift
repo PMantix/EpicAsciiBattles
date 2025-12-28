@@ -301,10 +301,9 @@ struct BattleView: View {
                     let glyph = glyphs.randomElement() ?? "x"
                     addBlip(x: x, y: y, glyph: glyph, color: .red, ttl: 0.45 * gore.particleDuration * motionScale)
                     
-                    // Blood tint on background
-                    let tintRadius = damage > 10 ? 2 : 1
-                    addBackgroundTint(x: x, y: y, radius: tintRadius, color: .red, 
-                                     opacity: gore.tintOpacity, duration: 0.8 * gore.particleDuration)
+                    // Subtle blood tint on background (single tile only)
+                    addBackgroundTint(x: x, y: y, radius: 0, color: .red, 
+                                     opacity: gore.tintOpacity * 0.3, duration: 0.4 * gore.particleDuration)
                 }
                 // Flash on attacker too
                 if let (x, y) = actorPosition(attackerId, state: state) {
@@ -324,10 +323,7 @@ struct BattleView: View {
                                                        color: .red.opacity(0.5 + Double(amount) * 0.02), 
                                                        isPermanent: !gore.fadeMarks))
                     }
-                    
-                    // Blood tint
-                    addBackgroundTint(x: x, y: y, radius: 1, color: .red, 
-                                     opacity: gore.tintOpacity * 0.7, duration: 0.5)
+                    // No background tint for bleed - just the particle
                 }
                 
             case .sever(let actorId, let partId, let gibChar, let x, let y):
@@ -349,23 +345,24 @@ struct BattleView: View {
                     }
                 }
                 
-                // Big blood splash
+                // Subtle blood splash (single tile)
                 if let (ax, ay) = actorPosition(actorId, state: state) {
                     addHitFlash(actorId: actorId, duration: 0.3 * motionScale)
                     addBlip(x: ax, y: ay, glyph: "*", color: .orange, ttl: 0.7 * motionScale)
-                    addBackgroundTint(x: ax, y: ay, radius: 3, color: .red, 
-                                     opacity: gore.tintOpacity * 1.2, duration: 1.5)
+                    addBackgroundTint(x: ax, y: ay, radius: 1, color: .red, 
+                                     opacity: gore.tintOpacity * 0.5, duration: 0.8)
                 }
                 
             case .death(_, let x, let y):
                 addBlip(x: x, y: y, glyph: "✚", color: .gray, ttl: 1.0 * motionScale)
                 persistentMarks.append(GridMark(x: x, y: y, glyph: "X", color: .gray.opacity(0.7), isPermanent: true))
-                addBackgroundTint(x: x, y: y, radius: 2, color: .red, opacity: gore.tintOpacity * 0.8, duration: 2.0)
+                // Single tile death tint
+                addBackgroundTint(x: x, y: y, radius: 0, color: .red, opacity: gore.tintOpacity * 0.4, duration: 1.0)
                 
             case .vomit(_, _, let x, let y):
                 addBlip(x: x, y: y, glyph: "@", color: .green, ttl: 0.6 * motionScale)
                 persistentMarks.append(GridMark(x: x, y: y, glyph: "~", color: .green.opacity(0.5), isPermanent: !gore.fadeMarks))
-                addBackgroundTint(x: x, y: y, radius: 1, color: .green, opacity: gore.tintOpacity * 0.5, duration: 1.0)
+                addBackgroundTint(x: x, y: y, radius: 0, color: .green, opacity: gore.tintOpacity * 0.3, duration: 0.6)
                 
             case .statusChange(let actorId, let status, _):
                 if status == "miss", let (x, y) = actorPosition(actorId, state: state) {
@@ -449,22 +446,24 @@ struct BattleView: View {
     func finishBattle() {
         stopSimulation()
         
-        if let run = gameState.currentRun, let picked = run.pickedTeam, let core = run.battleCore {
+        if let run = gameState.currentRun, let core = run.battleCore {
             let winner = Int(core.getWinner())
-            run.wasCorrect = (winner == picked)
+            // Win condition: Team A wins the battle
+            run.wasCorrect = (winner == 0)
             run.battleFinished = true
+            
+            let winningTeam = winner == 0 ? run.teamAName : run.teamBName
             
             combatLog.append(LogEntry(text: "", color: .white, isCritical: false))
             combatLog.append(LogEntry(text: "═══════════════════════════", color: DFColors.yellow, isCritical: true))
-            combatLog.append(LogEntry(text: winner == 0 ? "Team A Wins!" : "Team B Wins!", color: DFColors.lgreen, isCritical: true))
-            combatLog.append(LogEntry(text: "Your pick: Team \(picked == 0 ? "A" : "B")", color: .white, isCritical: false))
-            combatLog.append(LogEntry(text: run.wasCorrect ? "CORRECT!" : "INCORRECT", 
+            combatLog.append(LogEntry(text: "\(winningTeam) wins!", color: winner == 0 ? DFColors.lgreen : DFColors.lred, isCritical: true))
+            combatLog.append(LogEntry(text: run.wasCorrect ? "VICTORY!" : "DEFEAT", 
                                      color: run.wasCorrect ? DFColors.lgreen : DFColors.lred, 
                                      isCritical: true))
             combatLog.append(LogEntry(text: "═══════════════════════════", color: DFColors.yellow, isCritical: true))
             
             if run.wasCorrect {
-                let points = run.calculateScore(isUnderdog: false)
+                let points = run.calculateScore(adjustmentsRemaining: run.adjustmentsRemaining)
                 run.score += points
                 battleResult = BattleResult(isWin: true, points: points, totalScore: run.score)
             } else {
